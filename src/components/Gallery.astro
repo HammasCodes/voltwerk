@@ -1,0 +1,253 @@
+---
+import { Image } from 'astro:assets';
+import { bikePhotos, photoAlt } from '../lib/images';
+
+interface Props {
+  photos: string[];
+  brand: string;
+  model: string;
+  slug: string;
+}
+
+const { photos, brand, model, slug } = Astro.props;
+const images = bikePhotos(photos);
+---
+
+{
+  /*
+  One scroll-snap track drives every viewport. Mobile gets native momentum
+  swiping for free, desktop gets the same track moved by the arrows and
+  thumbnails. Building two separate carousels would mean two sets of bugs.
+*/
+}
+<div class="gallery" data-gallery>
+  <div class="relative">
+    <div
+      class="gallery-track bg-paper-sunk aspect-[4/3] w-full overflow-x-auto rounded-lg"
+      data-track
+      tabindex="0"
+      role="group"
+      aria-label={`${brand} ${model} photos, use arrow keys to move between them`}
+    >
+      <div class="flex h-full">
+        {
+          images.map((img, i) => (
+            <div class="h-full w-full shrink-0 snap-center">
+              <Image
+                src={img}
+                alt={photoAlt(brand, model, i, images.length)}
+                widths={[640, 1000, 1400]}
+                sizes="(min-width: 1024px) 58vw, 100vw"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                class="h-full w-full object-cover"
+                transition:name={i === 0 ? `bike-photo-${slug}` : undefined}
+              />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    {
+      images.length > 1 && (
+        <>
+          <button type="button" data-prev class="gallery-arrow left-3" aria-label="Previous photo">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path
+                d="M11.5 3.5L6 9l5.5 5.5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button type="button" data-next class="gallery-arrow right-3" aria-label="Next photo">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <path
+                d="M6.5 3.5L12 9l-5.5 5.5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+
+          {/* Dots on mobile only. On desktop the thumbnails below already say
+              which photo is showing, so dots would be a second answer to a
+              question that has been answered. */}
+          <div
+            class="bg-ink/55 absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full px-2.5 py-1.5 backdrop-blur-sm sm:hidden"
+            aria-hidden="true"
+          >
+            {images.map((_, i) => (
+              <span class="gallery-dot" data-dot={i} />
+            ))}
+          </div>
+        </>
+      )
+    }
+  </div>
+
+  {
+    images.length > 1 && (
+      <div
+        class="mt-3 hidden gap-3 sm:grid"
+        style={`grid-template-columns: repeat(${images.length}, minmax(0, 1fr))`}
+      >
+        {images.map((img, i) => (
+          <button
+            type="button"
+            class="gallery-thumb"
+            data-thumb={i}
+            aria-label={`Show photo ${i + 1}`}
+          >
+            <Image
+              src={img}
+              alt=""
+              widths={[200, 400]}
+              sizes="200px"
+              loading="lazy"
+              class="aspect-[4/3] h-full w-full object-cover"
+            />
+          </button>
+        ))}
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .gallery-track {
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .gallery-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gallery-arrow {
+    position: absolute;
+    top: 50%;
+    display: none;
+    height: 2.5rem;
+    width: 2.5rem;
+    translate: 0 -50%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--color-paper) 92%, transparent);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-card);
+    transition: background-color 150ms var(--ease-out-soft);
+  }
+  .gallery-arrow:hover {
+    background-color: var(--color-paper);
+  }
+  /* Arrows are pointer affordances. On touch the swipe is the interaction, and
+     a floating arrow would only cover the photo. */
+  @media (hover: hover) and (min-width: 640px) {
+    .gallery-arrow {
+      display: flex;
+    }
+  }
+  .gallery-arrow[disabled] {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .gallery-dot {
+    height: 0.375rem;
+    width: 0.375rem;
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--color-paper) 45%, transparent);
+    transition: all 200ms var(--ease-out-soft);
+  }
+  .gallery-dot[data-active='true'] {
+    width: 1rem;
+    background-color: var(--color-paper);
+  }
+
+  .gallery-thumb {
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-line);
+    opacity: 0.55;
+    transition: all 200ms var(--ease-out-soft);
+  }
+  .gallery-thumb:hover {
+    opacity: 0.85;
+  }
+  .gallery-thumb[data-active='true'] {
+    border-color: var(--color-ink);
+    opacity: 1;
+  }
+</style>
+
+<script>
+  function initGalleries() {
+    document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((root) => {
+      const track = root.querySelector<HTMLElement>('[data-track]');
+      if (!track) return;
+
+      const dots = root.querySelectorAll<HTMLElement>('[data-dot]');
+      const thumbs = root.querySelectorAll<HTMLButtonElement>('[data-thumb]');
+      const prev = root.querySelector<HTMLButtonElement>('[data-prev]');
+      const next = root.querySelector<HTMLButtonElement>('[data-next]');
+      const count = Math.max(dots.length, thumbs.length, 1);
+
+      let index = 0;
+
+      function goTo(i: number) {
+        const clamped = Math.max(0, Math.min(count - 1, i));
+        track!.scrollTo({ left: clamped * track!.clientWidth, behavior: 'smooth' });
+      }
+
+      function render() {
+        dots.forEach((d, i) => d.setAttribute('data-active', String(i === index)));
+        thumbs.forEach((t) => {
+          const i = Number(t.dataset.thumb);
+          t.setAttribute('data-active', String(i === index));
+          t.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+        if (prev) prev.disabled = index === 0;
+        if (next) next.disabled = index === count - 1;
+      }
+
+      // Derive the active slide from scroll position rather than tracking it
+      // separately, so a swipe, an arrow click and a thumbnail click all end up
+      // reading from the same source of truth.
+      let frame = 0;
+      track.addEventListener('scroll', () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          const i = Math.round(track.scrollLeft / track.clientWidth);
+          if (i !== index) {
+            index = i;
+            render();
+          }
+        });
+      });
+
+      prev?.addEventListener('click', () => goTo(index - 1));
+      next?.addEventListener('click', () => goTo(index + 1));
+      thumbs.forEach((t) => t.addEventListener('click', () => goTo(Number(t.dataset.thumb))));
+
+      track.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          goTo(index + 1);
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          goTo(index - 1);
+        }
+      });
+
+      render();
+    });
+  }
+
+  document.addEventListener('astro:page-load', initGalleries);
+</script>

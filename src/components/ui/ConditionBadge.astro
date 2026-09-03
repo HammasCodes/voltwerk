@@ -1,0 +1,40 @@
+---
+import type { Grade } from '../../types';
+import { gradeMeaning } from '../../lib/format';
+
+interface Props {
+  grade: Grade;
+  withMeaning?: boolean;
+  class?: string;
+}
+
+const { grade, withMeaning = false, class: className = '' } = Astro.props;
+
+// Grades are neutral by design. Colouring a C red would read as a warning, but
+// a C bike is not defective, it is cheap and honestly described. The wear notes
+// on the detail page carry the actual severity signal.
+const styles = {
+  A: 'border-ink bg-ink text-paper',
+  B: 'border-line-strong bg-transparent text-ink',
+  C: 'border-line-strong bg-transparent text-ink-muted',
+}[grade];
+---
+
+<span class:list={['inline-flex items-center gap-2', className]}>
+  <span
+    class:list={[
+      'inline-flex h-6 w-6 items-center justify-center rounded-full border font-mono text-xs font-semibold',
+      styles,
+    ]}
+    title={gradeMeaning[grade]}
+  >
+    {grade}
+  </span>
+  {
+    withMeaning ? (
+      <span class="text-ink-muted text-sm">{gradeMeaning[grade]}</span>
+    ) : (
+      <span class="text-label text-ink-faint uppercase">Grade {grade}</span>
+    )
+  }
+</span>

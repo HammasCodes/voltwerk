@@ -1,0 +1,280 @@
+---
+import Base from '../layouts/Base.astro';
+import Button from '../components/ui/Button.astro';
+import { company } from '../data/company';
+import { listedBikes } from '../data/bikes';
+---
+
+<Base
+  title="Contact"
+  description={`Visit ${company.name} at ${company.address.street}, ${company.address.city}. Call ${company.phone} or send a message about a bike, a repair or a trade in.`}
+>
+  <section class="shell pt-12 pb-14 md:pt-16">
+    <p class="text-label text-ink-faint uppercase">Contact</p>
+    <h1 class="text-h1 mt-4">Come by, call, or send a message.</h1>
+    <p class="text-lead text-ink-muted mt-6 max-w-xl">
+      No appointment needed for a test ride. If you are asking about a specific bike, mention it and
+      we will make sure it is on the floor when you arrive.
+    </p>
+  </section>
+
+  <section class="shell pb-16 md:pb-24">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16">
+      <!-- Form -->
+      <form id="contact-form" class="border-line bg-card rounded-lg border p-6 sm:p-8" novalidate>
+        <h2 class="text-h3">Send a message</h2>
+
+        <div class="mt-6 grid gap-5 sm:grid-cols-2">
+          <div class="sm:col-span-2">
+            <label for="c-name" class="text-label text-ink-faint block uppercase">Your name</label>
+            <input
+              type="text"
+              id="c-name"
+              name="name"
+              required
+              autocomplete="name"
+              class="border-line-strong bg-paper mt-2 h-11 w-full rounded-sm border px-3 text-sm"
+            />
+          </div>
+
+          <div>
+            <label for="c-email" class="text-label text-ink-faint block uppercase">Email</label>
+            <input
+              type="email"
+              id="c-email"
+              name="email"
+              required
+              autocomplete="email"
+              class="border-line-strong bg-paper mt-2 h-11 w-full rounded-sm border px-3 text-sm"
+            />
+          </div>
+
+          <div>
+            <label for="c-phone" class="text-label text-ink-faint block uppercase">
+              Phone <span class="normal-case">(optional)</span>
+            </label>
+            <input
+              type="tel"
+              id="c-phone"
+              name="phone"
+              autocomplete="tel"
+              class="border-line-strong bg-paper mt-2 h-11 w-full rounded-sm border px-3 text-sm"
+            />
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="c-topic" class="text-label text-ink-faint block uppercase">
+              What is this about
+            </label>
+            <select
+              id="c-topic"
+              name="topic"
+              class="border-line-strong bg-paper mt-2 h-11 w-full rounded-sm border px-3 text-sm"
+            >
+              <option value="test-ride">Booking a test ride</option>
+              <option value="bike">A question about a bike</option>
+              <option value="repair">A repair or service</option>
+              <option value="sell">Selling or trading in my bike</option>
+              <option value="other">Something else</option>
+            </select>
+          </div>
+
+          {
+            /*
+            Pre-filled from ?bike= when someone arrives from a listing. It saves
+            them retyping the model, and it tells the shop exactly which bike is
+            being asked about without a back and forth email.
+          */
+          }
+          <div class="sm:col-span-2">
+            <label for="c-bike" class="text-label text-ink-faint block uppercase">
+              Which bike <span class="normal-case">(optional)</span>
+            </label>
+            <select
+              id="c-bike"
+              name="bike"
+              class="border-line-strong bg-paper mt-2 h-11 w-full rounded-sm border px-3 text-sm"
+            >
+              <option value="">Not about a specific bike</option>
+              {
+                listedBikes.map((b) => (
+                  <option value={b.slug}>
+                    {b.brand} {b.model} ({b.year})
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="c-message" class="text-label text-ink-faint block uppercase">Message</label>
+            <textarea
+              id="c-message"
+              name="message"
+              rows="5"
+              class="border-line-strong bg-paper mt-2 w-full rounded-sm border px-3 py-2.5 text-sm"
+            ></textarea>
+          </div>
+        </div>
+
+        <Button type="submit" size="lg" class="mt-6 w-full sm:w-auto">Send message</Button>
+
+        <p class="text-ink-faint mt-4 text-xs">
+          This is a design prototype, so nothing is actually sent anywhere.
+        </p>
+
+        <div
+          id="contact-success"
+          hidden
+          role="status"
+          class="border-available/30 bg-available/8 rounded-md border p-6 text-center"
+        >
+          <p class="font-display text-xl font-semibold">Message sent</p>
+          <p class="text-ink-muted mx-auto mt-2 max-w-sm text-sm">
+            In a real build this would reach the shop inbox and you would hear back the same working
+            day.
+          </p>
+          <button
+            type="button"
+            id="contact-reset"
+            class="decoration-lime mt-5 text-sm font-medium underline decoration-2 underline-offset-4"
+          >
+            Send another message
+          </button>
+        </div>
+      </form>
+
+      <!-- Details -->
+      <div class="space-y-8">
+        <div class="border-line rounded-lg border p-6">
+          <h2 class="text-label text-ink-faint uppercase">Visit the workshop</h2>
+          <address class="mt-4 text-lg leading-relaxed not-italic">
+            {company.address.street}<br />
+            {company.address.postcode}
+            {company.address.city}<br />
+            {company.address.country}
+          </address>
+
+          {
+            /*
+            A styled placeholder rather than an embedded map. A third party map
+            iframe is the single heaviest thing that could go on this page and
+            it would load tracking scripts on a contact form. A real build would
+            use a static map image linked to directions.
+          */
+          }
+          <div
+            class="border-line bg-paper-sunk mt-5 flex aspect-[16/10] items-center justify-center rounded-md border"
+            role="img"
+            aria-label={`Map placeholder for ${company.address.street}, ${company.address.city}`}
+          >
+            <div class="text-center">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                class="text-ink-faint mx-auto"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"></path>
+                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"></circle>
+              </svg>
+              <p class="text-ink-faint mt-2 text-xs">Map loads on request</p>
+            </div>
+          </div>
+
+          <Button
+            href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(`${company.address.street}, ${company.address.city}`)}`}
+            variant="secondary"
+            class="mt-4 w-full"
+          >
+            Open directions
+          </Button>
+        </div>
+
+        <div class="border-line rounded-lg border p-6">
+          <h2 class="text-label text-ink-faint uppercase">Opening hours</h2>
+          <dl class="mt-4 space-y-2">
+            {
+              company.hours.map((slot) => (
+                <div class="border-line flex justify-between gap-4 border-b pb-2 text-sm last:border-0">
+                  <dt>{slot.days}</dt>
+                  <dd class="tabular font-mono">
+                    {slot.open}&ndash;{slot.close}
+                  </dd>
+                </div>
+              ))
+            }
+            <div class="text-ink-muted flex justify-between gap-4 text-sm">
+              <dt>Sunday</dt>
+              <dd>Closed</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="border-line rounded-lg border p-6">
+          <h2 class="text-label text-ink-faint uppercase">Faster than email</h2>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <Button href={company.phoneHref} variant="secondary">{company.phone}</Button>
+            <Button href={company.whatsapp} variant="secondary">WhatsApp</Button>
+          </div>
+          <p class="text-ink-muted mt-4 text-sm">
+            Or email
+            <a
+              href={`mailto:${company.email}`}
+              class="text-ink decoration-lime underline decoration-2 underline-offset-4"
+            >
+              {company.email}
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  function initContactForm() {
+    const form = document.getElementById('contact-form') as HTMLFormElement | null;
+    const success = document.getElementById('contact-success');
+    const reset = document.getElementById('contact-reset');
+    if (!form || !success) return;
+
+    // Arriving from a bike listing pre-selects that bike and the right topic.
+    const slug = new URLSearchParams(location.search).get('bike');
+    if (slug) {
+      const bikeSelect = form.elements.namedItem('bike');
+      const topicSelect = form.elements.namedItem('topic');
+      if (bikeSelect instanceof HTMLSelectElement) bikeSelect.value = slug;
+      if (topicSelect instanceof HTMLSelectElement) topicSelect.value = 'test-ride';
+    }
+
+    const sections = form.querySelectorAll<HTMLElement>(
+      'h2, .grid, button[type="submit"], p.text-xs',
+    );
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      sections.forEach((el) => (el.hidden = true));
+      success.hidden = false;
+      success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    reset?.addEventListener('click', () => {
+      form.reset();
+      success.hidden = true;
+      sections.forEach((el) => (el.hidden = false));
+    });
+  }
+
+  document.addEventListener('astro:page-load', initContactForm);
+</script>

@@ -1,0 +1,336 @@
+---
+import Base from '../../layouts/Base.astro';
+import Gallery from '../../components/Gallery.astro';
+import BikeCard from '../../components/BikeCard.astro';
+import BatteryMeter from '../../components/ui/BatteryMeter.astro';
+import ConditionBadge from '../../components/ui/ConditionBadge.astro';
+import Badge from '../../components/ui/Badge.astro';
+import Button from '../../components/ui/Button.astro';
+import { bikes, listedBikes } from '../../data/bikes';
+import { company } from '../../data/company';
+import { formatPrice, formatKm, formatDate, formatNumber } from '../../lib/format';
+import { bikePhoto } from '../../lib/images';
+
+export function getStaticPaths() {
+  // Sold bikes get a page too. People bookmark and share listings, and a 404 on
+  // a bike that existed last week is a worse experience than a page that says
+  // plainly that it has gone.
+  return bikes.map((bike) => ({ params: { slug: bike.slug }, props: { bike } }));
+}
+
+const { bike } = Astro.props;
+const isSold = bike.availability === 'sold';
+
+// Same category first, then nearest price. Someone looking at a cargo bike is
+// rarely one click away from wanting a folding bike.
+const similar = listedBikes
+  .filter((b) => b.slug !== bike.slug)
+  .sort((a, b) => {
+    const catA = a.category === bike.category ? 0 : 1;
+    const catB = b.category === bike.category ? 0 : 1;
+    if (catA !== catB) return catA - catB;
+    return Math.abs(a.price - bike.price) - Math.abs(b.price - bike.price);
+  })
+  .slice(0, 3);
+
+const specs = [
+  { label: 'Motor', value: `${bike.motor.brand} ${bike.motor.model}` },
+  { label: 'Torque', value: `${bike.motor.torqueNm} Nm`, mono: true },
+  { label: 'Motor position', value: bike.motor.position.replace('-', ' ') },
+  { label: 'Battery', value: `${formatNumber(bike.battery.capacityWh)} Wh`, mono: true },
+  { label: 'Gears', value: bike.gears },
+  { label: 'Brakes', value: bike.brakes },
+  { label: 'Frame type', value: bike.frameType.replace('-', ' ') },
+  { label: 'Frame size', value: `${bike.frameSize} · ${bike.frameSizeCm} cm`, mono: true },
+  {
+    label: 'Suits riders',
+    value: `${bike.riderHeightCm[0]} to ${bike.riderHeightCm[1]} cm`,
+    mono: true,
+  },
+  { label: 'Wheels', value: bike.wheelSize },
+  { label: 'Weight', value: `${bike.weightKg} kg`, mono: true },
+  { label: 'Mileage', value: formatKm(bike.mileageKm), mono: true },
+];
+
+const severityStyles = {
+  good: { dot: 'bg-available', label: 'Good' },
+  wear: { dot: 'bg-ink-faint', label: 'Normal wear' },
+  attention: { dot: 'bg-reserved', label: 'Worth knowing' },
+};
+
+const photo = bikePhoto(bike.photos[0]);
+
+const productSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: `${bike.brand} ${bike.model}`,
+  brand: { '@type': 'Brand', name: bike.brand },
+  category: 'Electric bicycle',
+  itemCondition: 'https://schema.org/UsedCondition',
+  description: bike.condition.summary,
+  image: photo ? new URL(photo.src, Astro.site).href : undefined,
+  offers: {
+    '@type': 'Offer',
+    price: bike.price,
+    priceCurrency: 'EUR',
+    availability: isSold
+      ? 'https://schema.org/SoldOut'
+      : bike.availability === 'reserved'
+        ? 'https://schema.org/LimitedAvailability'
+        : 'https://schema.org/InStock',
+    seller: { '@type': 'Organization', name: company.name },
+  },
+};
+
+const whatsappText = encodeURIComponent(
+  `Hi, I am interested in the ${bike.brand} ${bike.model} (${bike.year}) listed at ${formatPrice(bike.price)}.`,
+);
+---
+
+<Base
+  title={`${bike.brand} ${bike.model} (${bike.year})`}
+  description={`${bike.condition.summary} ${formatPrice(bike.price)}, ${formatKm(bike.mileageKm)}, battery health ${bike.battery.healthPct}%. Inspected and sold by ${company.name} in Amsterdam.`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(productSchema)} slot="head" />
+
+  <div class="shell pt-6 pb-4">
+    <a
+      href="/bikes"
+      class="text-ink-muted hover:text-ink inline-flex items-center gap-1.5 text-sm transition-colors"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path
+          d="M10 3.5L5.5 8l4.5 4.5"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      All bikes
+    </a>
+  </div>
+
+  <div class="shell grid gap-10 pb-16 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-12">
+    <div>
+      <Gallery photos={bike.photos} brand={bike.brand} model={bike.model} slug={bike.slug} />
+    </div>
+
+    <!-- Buy panel. Sticky on desktop so price and the call to action stay in
+         view while the specification below is being read. -->
+    <div class="lg:sticky lg:top-24 lg:self-start">
+      <div class="flex items-center gap-3">
+        <p class="text-label text-ink-faint uppercase">{bike.brand}</p>
+        <Badge availability={bike.availability} />
+      </div>
+      <h1 class="text-h1 mt-2">{bike.model}</h1>
+
+      <div class="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span class="tabular font-mono text-3xl font-semibold">{formatPrice(bike.price)}</span>
+        {
+          bike.priceWas && (
+            <span class="tabular text-ink-faint font-mono text-base line-through">
+              {formatPrice(bike.priceWas)}
+            </span>
+          )
+        }
+        <span class="text-ink-muted text-sm">including {bike.warrantyMonths} months warranty</span>
+      </div>
+
+      <dl class="border-line mt-6 grid grid-cols-3 gap-3 border-y py-5">
+        <div>
+          <dt class="text-label text-ink-faint uppercase">Year</dt>
+          <dd class="tabular mt-1 font-mono">{bike.year}</dd>
+        </div>
+        <div>
+          <dt class="text-label text-ink-faint uppercase">Mileage</dt>
+          <dd class="tabular mt-1 font-mono">{formatKm(bike.mileageKm)}</dd>
+        </div>
+        <div>
+          <dt class="text-label text-ink-faint uppercase">Frame</dt>
+          <dd class="tabular mt-1 font-mono">{bike.frameSize} &middot; {bike.frameSizeCm}cm</dd>
+        </div>
+      </dl>
+
+      <div class="border-line bg-card mt-6 rounded-md border p-5">
+        <BatteryMeter battery={bike.battery} variant="detail" />
+      </div>
+
+      {
+        isSold ? (
+          <div class="border-line bg-paper-sunk mt-6 rounded-md border p-5">
+            <p class="font-medium">This one has been sold.</p>
+            <p class="text-ink-muted mt-1.5 text-sm">
+              Similar bikes come in most weeks. Tell us what you are after and we will let you know
+              when something matching turns up.
+            </p>
+            <Button href="/bikes" variant="secondary" class="mt-4 w-full">
+              See what is in stock
+            </Button>
+          </div>
+        ) : (
+          <div class="mt-6 hidden gap-3 sm:grid sm:grid-cols-2">
+            <Button href={`/contact?bike=${bike.slug}`} size="lg">
+              Book a test ride
+            </Button>
+            <Button href={`${company.whatsapp}?text=${whatsappText}`} variant="secondary" size="lg">
+              Ask a question
+            </Button>
+          </div>
+        )
+      }
+
+      <p class="text-ink-muted mt-4 text-sm">
+        Visit us at {company.address.street}, {company.address.city}. Test rides available during
+        opening hours, no appointment needed.
+      </p>
+    </div>
+  </div>
+
+  <!-- Condition report -------------------------------------------------- -->
+  <section class="border-line bg-paper-sunk border-t">
+    <div class="shell grid gap-10 py-14 md:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
+      <div>
+        <h2 class="text-h2">Condition report</h2>
+        <div class="mt-5">
+          <ConditionBadge grade={bike.condition.grade} withMeaning />
+        </div>
+        <p class="text-lead text-ink-muted mt-5">{bike.condition.summary}</p>
+      </div>
+
+      {
+        /* Wear is listed as data, not prose. A used bike shop that publishes its
+          faults in a structured list is making a stronger trust claim than one
+          that writes a paragraph of reassurance. */
+      }
+      <ul class="divide-line border-line divide-y border-y">
+        {
+          bike.condition.notes.map((note) => (
+            <li class="flex gap-4 py-4">
+              <span
+                class:list={[
+                  'mt-1.5 h-2 w-2 shrink-0 rounded-full',
+                  severityStyles[note.severity].dot,
+                ]}
+                aria-hidden="true"
+              />
+              <div>
+                <p class="text-label text-ink-faint uppercase">
+                  {note.area} &middot; {severityStyles[note.severity].label}
+                </p>
+                <p class="text-ink mt-1">{note.note}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Specification ----------------------------------------------------- -->
+  <section class="shell py-14 md:py-20">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
+      <div>
+        <h2 class="text-h2">Full specification</h2>
+        <p class="text-ink-muted mt-4 max-w-sm">
+          Everything we measured or read off the bike during intake. Ask us if something you need is
+          not listed.
+        </p>
+      </div>
+
+      <dl class="grid grid-cols-2 gap-x-8 gap-y-0 sm:grid-cols-2">
+        {
+          specs.map((spec) => (
+            <div class="border-line flex justify-between gap-4 border-b py-3.5">
+              <dt class="text-ink-muted text-sm">{spec.label}</dt>
+              <dd class:list={['text-right text-sm', spec.mono && 'tabular font-mono']}>
+                {spec.value}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+
+    <div class="border-line mt-14 grid gap-10 border-t pt-14 sm:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <h3 class="text-label text-ink-faint uppercase">Included in the price</h3>
+        <ul class="mt-4 space-y-2">
+          {
+            bike.included.map((item) => (
+              <li class="flex gap-2.5 text-sm">
+                <span class="bg-ink mt-2 h-1 w-1 shrink-0 rounded-full" aria-hidden="true" />
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-label text-ink-faint uppercase">Warranty</h3>
+        <p class="tabular mt-4 font-mono text-2xl font-semibold">{bike.warrantyMonths} months</p>
+        <p class="text-ink-muted mt-2 text-sm">
+          Covers the motor, battery and electronics. Wear parts such as tyres, pads and the chain
+          are excluded.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-label text-ink-faint uppercase">Work we have done</h3>
+        <ul class="mt-4 space-y-3">
+          {
+            bike.serviceHistory.map((entry) => (
+              <li class="text-sm">
+                <span class="tabular text-ink-faint block font-mono text-xs">
+                  {formatDate(entry.date)}
+                </span>
+                <span class="mt-0.5 block">{entry.work}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Similar ------------------------------------------------------------ -->
+  {
+    similar.length > 0 && (
+      <section class="border-line border-t py-14 md:py-20">
+        <div class="shell">
+          <h2 class="text-h2">Also worth a look</h2>
+          <div class="mt-8 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {similar.map((b) => (
+              <BikeCard bike={b} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Mobile sticky action bar. Price stays visible next to the button so
+       nobody has to scroll back up to remember what they are committing to. -->
+  {
+    !isSold && (
+      <>
+        <div class="border-line bg-paper/95 fixed inset-x-0 bottom-0 z-30 border-t backdrop-blur-md sm:hidden">
+          <div class="flex items-center gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div class="min-w-0">
+              <p class="tabular font-mono text-lg leading-none font-semibold">
+                {formatPrice(bike.price)}
+              </p>
+              <p class="text-ink-faint mt-1 truncate text-xs">
+                {bike.battery.healthPct}% battery &middot; {bike.frameSize}
+              </p>
+            </div>
+            <Button href={`/contact?bike=${bike.slug}`} class="ml-auto shrink-0">
+              Book a test ride
+            </Button>
+          </div>
+        </div>
+        <div class="h-20 sm:hidden" aria-hidden="true" />
+      </>
+    )
+  }
+</Base>

@@ -1,0 +1,91 @@
+---
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import AdminApp from '../components/admin/AdminApp';
+import { bikes } from '../data/bikes';
+import { bikePhoto } from '../lib/images';
+
+// Thumbnails are generated here rather than in the island. Astro owns the image
+// pipeline, so React never needs to know about asset hashing, and the admin
+// table loads 160px webps instead of the 1600px originals.
+const entries = await Promise.all(
+  bikes.map(async (bike) => {
+    const filename = bike.photos[0];
+    const source = bikePhoto(filename);
+    if (!source) return null;
+    const optimized = await getImage({ src: source, width: 160, height: 120, format: 'webp' });
+    return [filename, optimized.src] as const;
+  }),
+);
+
+const thumbs = Object.fromEntries(
+  entries.filter((e): e is readonly [string, string] => e !== null),
+);
+---
+
+<Base
+  title="Inventory admin"
+  description="Internal prototype for managing the bike inventory."
+  noindex
+>
+  <div class="shell py-10 md:py-14">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p class="text-label text-ink-faint uppercase">Internal</p>
+        <h1 class="text-h1 mt-3">Inventory</h1>
+      </div>
+      <a
+        href="/bikes"
+        class="decoration-lime text-sm font-medium underline decoration-2 underline-offset-4"
+      >
+        View the public shop
+      </a>
+    </div>
+
+    {
+      /*
+      Stated plainly rather than hidden. This is a concept for how the owner
+      would manage stock, and pretending it is a real backend would be the wrong
+      thing to hand a client.
+    */
+    }
+    <div class="border-reserved/25 bg-reserved/8 mt-6 flex gap-3 rounded-md border p-4">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        class="text-reserved mt-0.5 shrink-0"
+        aria-hidden="true"
+      >
+        <path
+          d="M9 6.5v3.5M9 12.5h.01M9 2l7 13H2L9 2Z"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <div class="text-sm">
+        <p class="font-medium">Prototype, not a real backend</p>
+        <p class="text-ink-muted mt-1">
+          Changes are saved to this browser only and never leave your machine. Nothing here affects
+          the live pages, which are generated from the source data at build time.
+          {' Use '}<span class="text-ink">Reset demo data</span>{
+            ' to restore the original fourteen listings.'
+          }
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      {
+        /*
+        client:only because everything on this screen is driven by localStorage.
+        Server rendering it would produce markup for the seed data that the
+        browser immediately replaces, which is a guaranteed hydration mismatch.
+      */
+      }
+      <AdminApp client:only="react" thumbs={thumbs} />
+    </div>
+  </div>
+</Base>

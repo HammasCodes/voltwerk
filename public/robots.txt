@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Internal prototype, not for indexing.
+Disallow: /admin
+
+Sitemap: https://voltwerk.vercel.app/sitemap-index.xml

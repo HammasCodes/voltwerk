@@ -1,0 +1,118 @@
+---
+import { company, inspectionPoints } from '../data/company';
+import { listedBikes } from '../data/bikes';
+
+const year = new Date().getFullYear();
+const stockCount = listedBikes.length;
+
+const bikeLinks = [
+  { href: '/bikes', label: `All bikes (${stockCount})` },
+  { href: '/bikes?category=city', label: 'City bikes' },
+  { href: '/bikes?category=trekking', label: 'Trekking bikes' },
+  { href: '/bikes?category=cargo', label: 'Cargo bikes' },
+  { href: '/bikes?category=folding', label: 'Folding bikes' },
+];
+
+const serviceLinks = [
+  { href: '/service#packages', label: 'Service packages' },
+  { href: '/service#prices', label: 'Repair prices' },
+  { href: '/service#book', label: 'Book a repair' },
+  { href: '/about', label: 'About the workshop' },
+];
+---
+
+<footer class="bg-ink text-paper mt-auto">
+  <div class="shell grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:py-20">
+    <div class="sm:col-span-2 lg:col-span-1">
+      <p class="font-display text-2xl font-bold tracking-tight">VOLTWERK</p>
+      <p class="text-paper/70 mt-4 max-w-xs text-sm leading-relaxed">
+        {company.tagline} Every bike passes a {inspectionPoints.length}-point check before it goes
+        on sale.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-label text-paper/50 uppercase">Bikes</h2>
+      <ul class="mt-4 space-y-2.5">
+        {
+          bikeLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="focus-invert text-paper/75 hover:text-lime text-sm transition-colors"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-label text-paper/50 uppercase">Workshop</h2>
+      <ul class="mt-4 space-y-2.5">
+        {
+          serviceLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="focus-invert text-paper/75 hover:text-lime text-sm transition-colors"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-label text-paper/50 uppercase">Visit us</h2>
+      <address class="text-paper/75 mt-4 space-y-2.5 text-sm not-italic">
+        <p>
+          {company.address.street}<br />
+          {company.address.postcode}&nbsp;{company.address.city}
+        </p>
+        <p>
+          <a href={company.phoneHref} class="focus-invert hover:text-lime transition-colors">
+            {company.phone}
+          </a>
+          <br />
+          <a
+            href={`mailto:${company.email}`}
+            class="focus-invert hover:text-lime transition-colors"
+          >
+            {company.email}
+          </a>
+        </p>
+      </address>
+
+      <dl class="text-paper/60 mt-5 space-y-1.5 text-sm">
+        {
+          company.hours.map((slot) => (
+            <div class="flex justify-between gap-4">
+              <dt>{slot.days}</dt>
+              <dd class="tabular">
+                {slot.open} to {slot.close}
+              </dd>
+            </div>
+          ))
+        }
+        <div class="flex justify-between gap-4">
+          <dt>Sunday</dt>
+          <dd>Closed</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="border-paper/10 border-t">
+    <div
+      class="shell text-paper/50 flex flex-col gap-2 py-6 text-xs sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>&copy; {year} {company.name}. A fictional business, built as a design assignment.</p>
+      <p>{company.address.city}, {company.address.country}</p>
+    </div>
+  </div>
+</footer>

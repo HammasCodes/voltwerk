@@ -1,0 +1,35 @@
+---
+import type { Availability } from '../../types';
+
+interface Props {
+  availability: Availability;
+  class?: string;
+}
+
+const { availability, class: className = '' } = Astro.props;
+
+// Available deliberately has no badge. Twelve of fourteen bikes are available,
+// so badging them would put a green pill on almost every card and the two that
+// actually matter would stop standing out. Absence is the default state.
+const config = {
+  available: null,
+  reserved: { label: 'Reserved', cls: 'bg-reserved/12 text-reserved' },
+  sold: { label: 'Sold', cls: 'bg-sold/12 text-sold' },
+} as const;
+
+const badge = config[availability];
+---
+
+{
+  badge && (
+    <span
+      class:list={[
+        'text-label inline-flex items-center rounded-full px-2.5 py-1 uppercase',
+        badge.cls,
+        className,
+      ]}
+    >
+      {badge.label}
+    </span>
+  )
+}

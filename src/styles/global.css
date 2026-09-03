@@ -1,0 +1,181 @@
+/* ── Fonts ──────────────────────────────────────────────────────────────
+   wght.css = weight axis only. The full index.css also ships optical-size
+   and width axes we never use, so this is ~60% smaller for identical output. */
+@import '@fontsource-variable/bricolage-grotesque/wght.css';
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+@import 'tailwindcss';
+
+@theme {
+  /* ── Colour ───────────────────────────────────────────────────────────
+     Warm neutrals, not grey. A used-bike shop should feel like a workshop
+     with daylight in it, not a SaaS dashboard. */
+  --color-paper: #faf9f6; /* page ground */
+  --color-paper-sunk: #f1efe8; /* banded sections, table stripes */
+  --color-card: #ffffff; /* raised surfaces */
+
+  --color-ink: #0f0f0e; /* primary text, dark surfaces */
+  /* Contrast ratios measured against --color-paper. Both clear the 4.5:1 AA
+     threshold for normal size text, which the 11px uppercase labels need. */
+  --color-ink-muted: #56544e; /* 7.2:1, secondary text */
+  --color-ink-faint: #6f6c66; /* 5.0:1, labels and meta */
+  --color-line: #e3dfd5; /* hairlines */
+  --color-line-strong: #cbc6b9; /* input borders, dividers that must read */
+
+  /* Accent. RULE: lime is a FILL, never text. It fails contrast on paper at
+     any size. Used as a surface with ink on top, it hits ~15:1. */
+  --color-lime: #c8f04a;
+  --color-lime-deep: #a9d128; /* pressed/hover state of a lime fill */
+
+  /* Status colours. Each must clear 4.5:1 both on paper and on its own 12%
+     tint, which is the background the status pills use. The amber is the
+     tightest of the three, which is why it is this dark. */
+  --color-available: #2f6b41;
+  --color-reserved: #8a5a0e;
+  --color-sold: #b23a17;
+
+  /* ── Type ─────────────────────────────────────────────────────────────
+     Display = Bricolage (tight, a little odd, memorable)
+     Body    = Inter (invisible, which is the job)
+     Mono    = JetBrains for every number, so specs align into columns */
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Fluid scale. No breakpoint jumps, one continuous ramp from 320px to 1600px. */
+  /* Capped at 4.5rem rather than 5.75rem. The hero headline sits in a half
+     width column, and at the larger size "Used e-bikes," broke across two
+     lines at its own hyphen. */
+  --text-display: clamp(2.5rem, 1.6rem + 4vw, 4.5rem);
+  --text-display--line-height: 0.92;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 600;
+
+  --text-h1: clamp(2.125rem, 1.5rem + 2.9vw, 3.75rem);
+  --text-h1--line-height: 1;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h1--font-weight: 600;
+
+  --text-h2: clamp(1.625rem, 1.3rem + 1.6vw, 2.5rem);
+  --text-h2--line-height: 1.08;
+  --text-h2--letter-spacing: -0.025em;
+  --text-h2--font-weight: 600;
+
+  --text-h3: clamp(1.1875rem, 1.08rem + 0.55vw, 1.5rem);
+  --text-h3--line-height: 1.2;
+  --text-h3--letter-spacing: -0.015em;
+  --text-h3--font-weight: 600;
+
+  --text-lead: 1.125rem;
+  --text-lead--line-height: 1.6;
+
+  /* Uppercase micro-label used for spec keys and section eyebrows. */
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1.1;
+  --text-label--letter-spacing: 0.09em;
+  --text-label--font-weight: 500;
+
+  /* ── Shape & depth ────────────────────────────────────────────────── */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  /* Warm-tinted shadows. Neutral-black shadows read dirty on warm paper. */
+  --shadow-card: 0 1px 2px rgb(15 15 14 / 0.04), 0 8px 24px -14px rgb(15 15 14 / 0.12);
+  --shadow-lift: 0 2px 6px rgb(15 15 14 / 0.06), 0 20px 44px -18px rgb(15 15 14 / 0.2);
+  --shadow-sheet: 0 -10px 44px -12px rgb(15 15 14 / 0.28);
+
+  --ease-out-soft: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    text-wrap: balance; /* stops one orphaned word on a line by itself */
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* One focus style everywhere. An ink outline reads on paper, on lime and on
+     white. The only surface it fails on is ink itself, handled by .focus-invert */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-lime);
+    color: var(--color-ink);
+  }
+
+  /* Images are content here, not decoration. Never let one blow out a grid. */
+  img,
+  svg,
+  video {
+    display: block;
+    max-width: 100%;
+  }
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────── */
+
+/* Page gutter. clamp() instead of breakpoints: the margin grows continuously
+   so there is no width where the layout looks momentarily cramped. */
+@utility shell {
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3rem);
+}
+
+/* The single vertical rhythm unit for major page sections. */
+@utility section-y {
+  padding-block: clamp(3.5rem, 7vw, 7.5rem);
+}
+
+/* Every price, km, Wh and % gets this. Fixed-width digits mean numbers in a
+   column align on the decimal, so a grid of bikes is scannable at a glance. */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'ss02';
+}
+
+/* Focus ring for controls sitting on ink-coloured surfaces. */
+@utility focus-invert {
+  &:focus-visible {
+    outline-color: var(--color-lime);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

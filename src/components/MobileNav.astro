@@ -1,0 +1,150 @@
+---
+interface Props {
+  nav: { href: string; label: string }[];
+  phone: string;
+  phoneHref: string;
+  whatsapp: string;
+  stockCount: number;
+  currentPath: string;
+}
+
+const { nav, phone, phoneHref, whatsapp, stockCount, currentPath } = Astro.props;
+
+const isActive = (href: string) => currentPath === href || currentPath.startsWith(`${href}/`);
+---
+
+<button
+  type="button"
+  id="nav-open"
+  aria-expanded="false"
+  aria-controls="mobile-nav"
+  class="text-ink -mr-2 inline-flex h-11 w-11 items-center justify-center rounded-sm lg:hidden"
+>
+  <span class="sr-only">Open menu</span>
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+    <path
+      d="M2 6h18M2 12h18M2 18h18"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"></path>
+  </svg>
+</button>
+
+<div
+  id="mobile-nav"
+  hidden
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu"
+  class="bg-paper fixed inset-0 z-50 flex flex-col outline-none lg:hidden"
+>
+  <div class="flex h-16 items-center justify-between px-5">
+    <span class="font-display text-xl font-bold tracking-tight">VOLTWERK</span>
+    <button
+      type="button"
+      id="nav-close"
+      class="text-ink -mr-2 inline-flex h-11 w-11 items-center justify-center rounded-sm"
+    >
+      <span class="sr-only">Close menu</span>
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <path
+          d="M5 5l12 12M17 5L5 17"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"></path>
+      </svg>
+    </button>
+  </div>
+
+  <nav aria-label="Main" class="flex-1 overflow-y-auto px-5 pt-6">
+    <ul class="flex flex-col">
+      {
+        nav.map((item) => (
+          <li class="border-line border-b">
+            <a
+              href={item.href}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              class="font-display flex items-center justify-between py-5 text-2xl font-semibold tracking-tight"
+            >
+              <span class={isActive(item.href) ? 'text-ink' : 'text-ink-muted'}>{item.label}</span>
+              {item.href === '/bikes' ? (
+                <span class="tabular bg-lime text-ink rounded-full px-2.5 py-1 text-xs font-medium">
+                  {stockCount}
+                </span>
+              ) : (
+                isActive(item.href) && (
+                  <span class="bg-lime h-2 w-2 rounded-full" aria-hidden="true" />
+                )
+              )}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <div
+    class="border-line grid grid-cols-2 gap-3 border-t px-5 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+  >
+    <a
+      href={phoneHref}
+      class="focus-invert bg-ink text-paper flex h-12 items-center justify-center rounded-sm text-sm font-medium"
+    >
+      Call {phone}
+    </a>
+    <a
+      href={whatsapp}
+      class="border-line-strong text-ink flex h-12 items-center justify-center rounded-sm border text-sm font-medium"
+    >
+      WhatsApp
+    </a>
+  </div>
+</div>
+
+<script>
+  function initMobileNav() {
+    const panel = document.getElementById('mobile-nav');
+    const openBtn = document.getElementById('nav-open');
+    const closeBtn = document.getElementById('nav-close');
+    if (!panel || !openBtn || !closeBtn) return;
+
+    let previousOverflow = '';
+
+    // Added on open and removed on close. Binding once to document would leak a
+    // listener on every view transition, because document survives navigation
+    // even though the body is swapped out.
+    function onKeydown(event: KeyboardEvent) {
+      if (event.key === 'Escape') closeNav();
+    }
+
+    function openNav() {
+      panel.hidden = false;
+      openBtn.setAttribute('aria-expanded', 'true');
+      previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', onKeydown);
+      panel.focus();
+    }
+
+    function closeNav() {
+      panel.hidden = true;
+      openBtn.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeydown);
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openNav);
+    closeBtn.addEventListener('click', closeNav);
+
+    // Close when a link is followed, so the panel is not left open behind the
+    // next page during a view transition.
+    panel.querySelectorAll('a[href]').forEach((link) => link.addEventListener('click', closeNav));
+  }
+
+  // Fires on first load and after every view transition, which is what rebinds
+  // the handlers when ClientRouter swaps the page. DOMContentLoaded would run
+  // once and then silently stop working.
+  document.addEventListener('astro:page-load', initMobileNav);
+</script>

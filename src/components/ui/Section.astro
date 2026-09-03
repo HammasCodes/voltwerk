@@ -1,0 +1,39 @@
+---
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  id?: string;
+  sunk?: boolean;
+  class?: string;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const {
+  eyebrow,
+  title,
+  description,
+  id,
+  sunk = false,
+  class: className = '',
+  headingLevel: Heading = 'h2',
+} = Astro.props;
+---
+
+<section
+  id={id}
+  class:list={['section-y', sunk && 'bg-paper-sunk border-line border-y', className]}
+>
+  <div class="shell">
+    {
+      (eyebrow || title || description) && (
+        <header class="max-w-2xl">
+          {eyebrow && <p class="text-label text-ink-faint uppercase">{eyebrow}</p>}
+          {title && <Heading class="text-h2 mt-3">{title}</Heading>}
+          {description && <p class="text-lead text-ink-muted mt-4">{description}</p>}
+        </header>
+      )
+    }
+    <slot />
+  </div>
+</section>

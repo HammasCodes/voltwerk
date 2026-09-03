@@ -1,0 +1,106 @@
+---
+import type { Battery } from '../../types';
+import { formatNumber, formatMonthYear, healthBand, healthLabel } from '../../lib/format';
+
+interface Props {
+  battery: Battery;
+  variant?: 'card' | 'detail';
+  class?: string;
+}
+
+const { battery, variant = 'card', class: className = '' } = Astro.props;
+
+const band = healthBand(battery.healthPct);
+
+// Same three status colours used for availability. Introducing a second traffic
+// light palette for batteries would mean two colour systems to learn instead of
+// one, so these are reused deliberately.
+const bandColor = {
+  good: 'text-available',
+  fair: 'text-reserved',
+  poor: 'text-sold',
+}[band];
+
+const bandFill = {
+  good: 'bg-available',
+  fair: 'bg-reserved',
+  poor: 'bg-sold',
+}[band];
+
+const isNewPack = Boolean(battery.replacedOn);
+---
+
+<div class:list={['w-full', className]}>
+  <div class="flex items-baseline justify-between gap-3">
+    <span class="text-label text-ink-faint uppercase">
+      {variant === 'detail' ? 'Measured battery health' : 'Battery health'}
+    </span>
+    <span
+      class:list={[
+        'tabular font-mono leading-none font-semibold',
+        bandColor,
+        variant === 'detail' ? 'text-2xl' : 'text-base',
+      ]}
+    >
+      {battery.healthPct}%
+    </span>
+  </div>
+
+  {
+    /*
+    role="meter" is the correct role for a static reading of a value within a
+    known range. A progress bar would imply something is still happening.
+  */
+  }
+  <div
+    role="meter"
+    aria-valuenow={battery.healthPct}
+    aria-valuemin={0}
+    aria-valuemax={100}
+    aria-label={`Battery health ${battery.healthPct} percent, ${healthLabel[band].toLowerCase()}`}
+    class:list={[
+      'bg-ink/8 mt-2 w-full overflow-hidden rounded-full',
+      variant === 'detail' ? 'h-2' : 'h-1.5',
+    ]}
+  >
+    <div class:list={['h-full rounded-full', bandFill]} style={`width: ${battery.healthPct}%`}>
+    </div>
+  </div>
+
+  <div class="text-ink-muted mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+    <span class="tabular font-mono">{formatNumber(battery.capacityWh)} Wh</span>
+    <span aria-hidden="true" class="text-ink-faint">&middot;</span>
+    <span class="tabular font-mono">{formatNumber(battery.cycles)} cycles</span>
+
+    {
+      isNewPack && (
+        <span class="text-label bg-lime text-ink ml-auto rounded-full px-2 py-0.5 uppercase">
+          New pack
+        </span>
+      )
+    }
+  </div>
+
+  {
+    variant === 'detail' && (
+      <dl class="border-line mt-5 grid grid-cols-2 gap-4 border-t pt-5">
+        <div>
+          <dt class="text-label text-ink-faint uppercase">Realistic range</dt>
+          <dd class="tabular text-ink mt-1 font-mono text-sm">
+            {battery.rangeKm[0]} to {battery.rangeKm[1]} km
+          </dd>
+        </div>
+        <div>
+          <dt class="text-label text-ink-faint uppercase">Condition</dt>
+          <dd class:list={['mt-1 text-sm font-medium', bandColor]}>{healthLabel[band]}</dd>
+        </div>
+        {battery.replacedOn && (
+          <div class="col-span-2">
+            <dt class="text-label text-ink-faint uppercase">Pack replaced</dt>
+            <dd class="text-ink mt-1 text-sm">{formatMonthYear(battery.replacedOn)}</dd>
+          </div>
+        )}
+      </dl>
+    )
+  }
+</div>

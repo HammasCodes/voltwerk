@@ -1,0 +1,132 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Button from '../components/ui/Button.astro';
+import { company, inspectionPoints } from '../data/company';
+import { listedBikes } from '../data/bikes';
+import { bikePhoto } from '../lib/images';
+
+const workshop = bikePhoto('voltwerk-workshop-1.jpg');
+const detail = bikePhoto('voltwerk-workshop-2.jpg');
+
+const yearsTrading = new Date().getFullYear() - company.foundedYear;
+
+const principles = [
+  {
+    title: 'We write down what is wrong',
+    body: 'Every listing carries an itemised wear report, including the things that would be easier to leave out. A worn battery on a cheap bike is not a problem as long as the price and the listing say so.',
+  },
+  {
+    title: 'We test batteries, not guess',
+    body: 'Capacity is measured on a rig and the cycle count is read from the controller. A pack advertised as 500 Wh tells you what it was when new, which is not the same as what you are buying.',
+  },
+  {
+    title: 'We say when not to buy',
+    body: 'If a repair costs more than the bike is worth, or the bike on the floor is wrong for your height, we will say so. Selling someone the wrong bike costs more in returns than it makes in margin.',
+  },
+];
+---
+
+<Base
+  title="About"
+  description={`${company.name} has been buying, checking and reselling used electric bikes in Amsterdam since ${company.foundedYear}.`}
+>
+  <section class="shell pt-12 pb-14 md:pt-16">
+    <p class="text-label text-ink-faint uppercase">About us</p>
+    <h1 class="text-h1 mt-4 max-w-3xl">
+      A workshop that happens to sell bikes, rather than a shop that happens to have a workshop.
+    </h1>
+    <p class="text-lead text-ink-muted mt-6 max-w-2xl">
+      {company.name} started in {company.foundedYear} repairing electric bikes for people who had bought
+      them somewhere else. After {yearsTrading} years of seeing which bikes hold up and which ones do
+      not, selling used ones was the obvious next step.
+    </p>
+  </section>
+
+  {
+    workshop && (
+      <div class="shell">
+        <div class="bg-paper-sunk aspect-[16/9] overflow-hidden rounded-lg">
+          <Image
+            src={workshop}
+            alt="The VOLTWERK workshop with bikes on repair stands"
+            widths={[800, 1200, 1600]}
+            sizes="92vw"
+            loading="eager"
+            class="h-full w-full object-cover"
+          />
+        </div>
+      </div>
+    )
+  }
+
+  <section class="shell py-14 md:py-20">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-16">
+      <div>
+        <h2 class="text-h2">Why used</h2>
+      </div>
+      <div class="text-lead text-ink-muted max-w-2xl space-y-5">
+        <p>
+          A three year old e-bike from a good brand is usually a better bike than a new one at the
+          same money. The frame, the motor and the brakes on a €3,000 bike do not stop being good
+          because someone rode it for two summers.
+        </p>
+        <p>
+          The catch is the battery, and it is the one part nobody can judge by looking. That is why
+          every bike here has a measured health percentage and a cycle count on its page, and why we
+          price a tired pack into the bike rather than hoping you will not notice.
+        </p>
+        <p class="text-ink">
+          There are {listedBikes.length} bikes on the floor right now, all of them through the same
+          {inspectionPoints.length} point check.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-line bg-paper-sunk border-y py-14 md:py-20">
+    <div class="shell">
+      <h2 class="text-h2">How we work</h2>
+      <div class="mt-10 grid gap-8 md:grid-cols-3 md:gap-10">
+        {
+          principles.map((p) => (
+            <div class="border-ink border-t-2 pt-5">
+              <h3 class="text-h3">{p.title}</h3>
+              <p class="text-ink-muted mt-3 text-sm leading-relaxed">{p.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="shell py-14 md:py-20">
+    <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+      {
+        detail && (
+          <div class="bg-paper-sunk aspect-[4/3] overflow-hidden rounded-lg">
+            <Image
+              src={detail}
+              alt="Close detail of bicycle repair work"
+              widths={[600, 900, 1200]}
+              sizes="(min-width: 1024px) 46vw, 92vw"
+              loading="lazy"
+              class="h-full w-full object-cover"
+            />
+          </div>
+        )
+      }
+      <div>
+        <h2 class="text-h2">Selling or trading in?</h2>
+        <p class="text-lead text-ink-muted mt-5">
+          We buy used electric bikes outright, and we will take yours against anything on the floor.
+          Bring it in or send photos and we will give you a number.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <Button href="/contact">Get an offer</Button>
+          <Button href="/bikes" variant="secondary">See the stock</Button>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>

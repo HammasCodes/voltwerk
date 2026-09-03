@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import BikeCard from '../components/BikeCard.astro';
+import Button from '../components/ui/Button.astro';
+import { featuredBikes, listedBikes } from '../data/bikes';
+---
+
+<Base title="Page not found" noindex>
+  <section class="shell py-20 md:py-28">
+    <p class="tabular text-ink-faint font-mono text-sm">404</p>
+    <h1 class="text-h1 mt-4 max-w-2xl">This page has gone the way of a sold bike.</h1>
+    <p class="text-lead text-ink-muted mt-6 max-w-lg">
+      The link may be old, or the listing may have sold and been taken down. There are
+      {listedBikes.length} bikes on the floor right now.
+    </p>
+    <div class="mt-8 flex flex-wrap gap-3">
+      <Button href="/bikes" size="lg">Browse the bikes</Button>
+      <Button href="/service" variant="secondary" size="lg">Repairs and servicing</Button>
+    </div>
+  </section>
+
+  {
+    /* A 404 that only apologises wastes the visit. Showing real stock gives the
+      page a job beyond saying no. */
+  }
+  <section class="border-line border-t py-14 md:py-20">
+    <div class="shell">
+      <h2 class="text-h2">While you are here</h2>
+      <div class="mt-8 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        {featuredBikes.map((bike) => <BikeCard bike={bike} />)}
+      </div>
+    </div>
+  </section>
+</Base>

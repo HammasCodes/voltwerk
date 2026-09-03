@@ -1,0 +1,51 @@
+---
+// Renders as <a> when given an href, otherwise <button>. One component so a
+// call to action looks identical whether it navigates or submits.
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'md' | 'lg';
+  type?: 'button' | 'submit';
+  class?: string;
+  disabled?: boolean;
+  [key: string]: unknown;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  class: className = '',
+  disabled = false,
+  ...rest
+} = Astro.props;
+
+const base =
+  'inline-flex items-center justify-center gap-2 rounded-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45';
+
+const sizes = {
+  md: 'h-11 px-5 text-sm',
+  lg: 'h-13 px-7 text-base',
+};
+
+const variants = {
+  // Ink fill with the lime focus ring, since an ink outline would vanish here.
+  primary: 'bg-ink text-paper hover:bg-ink-muted focus-invert',
+  secondary: 'border border-line-strong text-ink hover:border-ink hover:bg-paper-sunk',
+  ghost: 'text-ink-muted hover:text-ink hover:bg-paper-sunk',
+};
+
+const cls = [base, sizes[size], variants[variant], className].join(' ');
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class={cls}
+  href={href}
+  type={href ? undefined : type}
+  disabled={href ? undefined : disabled}
+  {...rest}
+>
+  <slot />
+</Tag>

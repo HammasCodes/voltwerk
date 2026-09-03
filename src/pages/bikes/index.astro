@@ -1,0 +1,482 @@
+---
+import Base from '../../layouts/Base.astro';
+import BikeGrid from '../../components/BikeGrid.astro';
+import { listedBikes, brands, sizeOrder } from '../../data/bikes';
+
+const categories = [
+  { value: 'city', label: 'City' },
+  { value: 'trekking', label: 'Trekking' },
+  { value: 'cargo', label: 'Cargo' },
+  { value: 'folding', label: 'Folding' },
+  { value: 'speed', label: 'Speed pedelec' },
+];
+
+const priceSteps = [1000, 1500, 2000, 2500, 3000, 3500];
+
+// Newest first by default. A used inventory changes constantly, so the freshest
+// stock is the most useful thing to lead with for a returning visitor.
+const bikes = [...listedBikes].sort(
+  (a, b) => new Date(b.listedOn).getTime() - new Date(a.listedOn).getTime(),
+);
+---
+
+<Base
+  title="Bikes for sale"
+  description={`${bikes.length} used electric bikes in stock in Amsterdam. Every one battery tested, inspected over 21 points and sold with a written condition report.`}
+>
+  <div class="shell pt-10 pb-8 md:pt-14">
+    <h1 class="text-h1">Bikes for sale</h1>
+    <p class="text-lead text-ink-muted mt-4 max-w-xl">
+      Every bike is battery tested and inspected before it goes on the floor. Health, mileage and
+      wear are listed on the card, so you can rule bikes out without opening them.
+    </p>
+  </div>
+
+  <!-- Filters ------------------------------------------------------------ -->
+  <div class="lg:border-line lg:bg-paper-sunk lg:border-y">
+    <form id="filter-form" class="shell lg:py-5">
+      <div id="filter-panel" class="filter-panel" data-open="false">
+        <!-- Mobile sheet header -->
+        <div
+          class="border-line flex h-16 shrink-0 items-center justify-between border-b px-5 lg:hidden"
+        >
+          <span class="font-display text-lg font-semibold">Filters</span>
+          <button
+            type="button"
+            id="filter-close"
+            class="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-sm"
+          >
+            <span class="sr-only">Close filters</span>
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <path
+                d="M5 5l12 12M17 5L5 17"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div
+          class="flex-1 space-y-7 overflow-y-auto px-5 py-6 lg:flex lg:flex-wrap lg:items-end lg:space-y-0 lg:gap-x-5 lg:gap-y-4 lg:overflow-visible lg:px-0 lg:py-0"
+        >
+          <!-- Fit helper. Deliberately first, because a bike that does not fit
+               is disqualified no matter how good the price is. -->
+          <div class="lg:w-44">
+            <label for="f-height" class="text-label text-ink-faint block uppercase">
+              Your height
+            </label>
+            <div class="mt-2 flex items-center gap-2">
+              <input
+                type="number"
+                id="f-height"
+                name="height"
+                min="140"
+                max="210"
+                placeholder="e.g. 178"
+                class="tabular border-line-strong bg-card h-10 w-full rounded-sm border px-3 font-mono text-sm"
+              />
+              <span class="text-ink-faint text-sm">cm</span>
+            </div>
+            <p class="text-ink-faint mt-1.5 text-xs lg:hidden">
+              Shows only bikes that fit your height.
+            </p>
+          </div>
+
+          <div class="lg:w-40">
+            <label for="f-brand" class="text-label text-ink-faint block uppercase">Brand</label>
+            <select
+              id="f-brand"
+              name="brand"
+              class="border-line-strong bg-card mt-2 h-10 w-full rounded-sm border px-3 text-sm"
+            >
+              <option value="">All brands</option>
+              {brands.map((b) => <option value={b}>{b}</option>)}
+            </select>
+          </div>
+
+          <div class="lg:w-40">
+            <label for="f-price" class="text-label text-ink-faint block uppercase">Max price</label>
+            <select
+              id="f-price"
+              name="maxPrice"
+              class="border-line-strong bg-card mt-2 h-10 w-full rounded-sm border px-3 text-sm"
+            >
+              <option value="">Any price</option>
+              {
+                priceSteps.map((p) => (
+                  <option value={p}>up to &euro; {p.toLocaleString('nl-NL')}</option>
+                ))
+              }
+            </select>
+          </div>
+
+          <div class="lg:w-40">
+            <label for="f-health" class="text-label text-ink-faint block uppercase">
+              Battery health
+            </label>
+            <select
+              id="f-health"
+              name="health"
+              class="border-line-strong bg-card mt-2 h-10 w-full rounded-sm border px-3 text-sm"
+            >
+              <option value="">Any</option>
+              <option value="90">90% or better</option>
+              <option value="85">85% or better</option>
+              <option value="80">80% or better</option>
+            </select>
+          </div>
+
+          <div class="lg:w-36">
+            <label for="f-grade" class="text-label text-ink-faint block uppercase">Condition</label>
+            <select
+              id="f-grade"
+              name="grade"
+              class="border-line-strong bg-card mt-2 h-10 w-full rounded-sm border px-3 text-sm"
+            >
+              <option value="">Any grade</option>
+              <option value="A">A only</option>
+              <option value="AB">A and B</option>
+            </select>
+          </div>
+
+          <fieldset class="lg:w-auto">
+            <legend class="text-label text-ink-faint uppercase">Frame size</legend>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {
+                sizeOrder.map((s) => (
+                  <label class="chip">
+                    <input type="checkbox" name="size" value={s} class="sr-only" />
+                    <span>{s}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <fieldset class="lg:w-auto">
+            <legend class="text-label text-ink-faint uppercase">Type</legend>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {
+                categories.map((c) => (
+                  <label class="chip">
+                    <input type="checkbox" name="category" value={c.value} class="sr-only" />
+                    <span>{c.label}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <div class="lg:ml-auto lg:w-48">
+            <label for="f-sort" class="text-label text-ink-faint block uppercase">Sort by</label>
+            <select
+              id="f-sort"
+              name="sort"
+              class="border-line-strong bg-card mt-2 h-10 w-full rounded-sm border px-3 text-sm"
+            >
+              <option value="newest">Newest first</option>
+              <option value="price-asc">Price, low to high</option>
+              <option value="price-desc">Price, high to low</option>
+              <option value="battery-desc">Battery health</option>
+              <option value="mileage-asc">Lowest mileage</option>
+              <option value="year-desc">Newest model year</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Mobile sheet footer, in the thumb zone -->
+        <div
+          class="border-line flex shrink-0 gap-3 border-t px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden"
+        >
+          <button
+            type="button"
+            id="filter-clear-mobile"
+            class="border-line-strong h-12 flex-1 rounded-sm border text-sm font-medium"
+          >
+            Clear all
+          </button>
+          <button
+            type="button"
+            id="filter-apply"
+            class="focus-invert bg-ink text-paper h-12 flex-[2] rounded-sm text-sm font-medium"
+          >
+            Show <span id="apply-count">{bikes.length}</span> bikes
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results ------------------------------------------------------------ -->
+  <div class="shell pt-8 pb-20 md:pt-10 md:pb-28">
+    <div class="mb-8 flex items-center justify-between gap-4">
+      <p class="text-ink-muted text-sm" aria-live="polite">
+        Showing <span id="result-count" class="tabular text-ink font-mono">{bikes.length}</span>
+        {' of '}
+        <span class="tabular font-mono">{bikes.length}</span>
+        {' bikes'}
+      </p>
+      <button
+        type="button"
+        id="filter-clear"
+        class="text-ink decoration-lime hidden text-sm font-medium underline decoration-2 underline-offset-4 lg:inline"
+      >
+        Clear all filters
+      </button>
+    </div>
+
+    <BikeGrid bikes={bikes} filterable />
+
+    <div id="empty-state" hidden class="border-line border py-20 text-center">
+      <p class="text-h3">No bikes match those filters</p>
+      <p class="text-ink-muted mx-auto mt-3 max-w-sm text-sm">
+        Try widening the price or clearing the height filter. We take in new stock most weeks, so it
+        is worth checking back.
+      </p>
+      <button
+        type="button"
+        id="empty-clear"
+        class="focus-invert bg-ink text-paper mt-6 inline-flex h-11 items-center rounded-sm px-5 text-sm font-medium"
+      >
+        Clear all filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile filter trigger ---------------------------------------------- -->
+  <div
+    class="border-line bg-paper/95 fixed inset-x-0 bottom-0 z-30 border-t p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden"
+  >
+    <button
+      type="button"
+      id="filter-open"
+      class="focus-invert bg-ink text-paper flex h-12 w-full items-center justify-center gap-2 rounded-sm text-sm font-medium"
+    >
+      Filters
+      <span
+        id="filter-badge"
+        hidden
+        class="tabular bg-lime text-ink rounded-full px-2 py-0.5 text-xs"></span>
+    </button>
+  </div>
+  <div class="h-20 lg:hidden" aria-hidden="true"></div>
+</Base>
+
+<style>
+  /* Mobile: the filter form is a full height sheet. Desktop: a plain bar.
+     Same markup and the same form state in both, so nothing has to be kept in
+     sync between a mobile copy and a desktop copy. */
+  @media (max-width: 1023px) {
+    .filter-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      background-color: var(--color-paper);
+    }
+    .filter-panel[data-open='true'] {
+      display: flex;
+    }
+  }
+
+  /* Checkbox styled as a chip. The input stays in the DOM and keeps its native
+     keyboard and screen reader behaviour, it is just visually replaced. */
+  .chip {
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid var(--color-line-strong);
+    background-color: var(--color-card);
+    padding: 0.375rem 0.875rem;
+    font-size: 0.875rem;
+    transition: all 150ms var(--ease-out-soft);
+  }
+  .chip:hover {
+    border-color: var(--color-ink);
+  }
+  .chip:has(input:checked) {
+    border-color: var(--color-ink);
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .chip:has(input:focus-visible) {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  type SortKey =
+    'newest' | 'price-asc' | 'price-desc' | 'battery-desc' | 'mileage-asc' | 'year-desc';
+
+  function initInventory() {
+    const form = document.getElementById('filter-form') as HTMLFormElement | null;
+    const grid = document.getElementById('bike-grid');
+    if (!form || !grid) return;
+
+    const items = Array.from(grid.querySelectorAll<HTMLElement>('.bike-item'));
+    const panel = document.getElementById('filter-panel');
+    const countEl = document.getElementById('result-count');
+    const applyCountEl = document.getElementById('apply-count');
+    const badge = document.getElementById('filter-badge');
+    const emptyState = document.getElementById('empty-state');
+    const clearButtons = ['filter-clear', 'filter-clear-mobile', 'empty-clear'].map((id) =>
+      document.getElementById(id),
+    );
+
+    const num = (el: HTMLElement, key: string) => Number(el.dataset[key] ?? 0);
+
+    function readFilters() {
+      const data = new FormData(form!);
+      return {
+        height: Number(data.get('height')) || 0,
+        brand: String(data.get('brand') ?? ''),
+        maxPrice: Number(data.get('maxPrice')) || 0,
+        health: Number(data.get('health')) || 0,
+        grade: String(data.get('grade') ?? ''),
+        sizes: data.getAll('size').map(String),
+        categories: data.getAll('category').map(String),
+        sort: (String(data.get('sort') ?? 'newest') || 'newest') as SortKey,
+      };
+    }
+
+    function matches(el: HTMLElement, f: ReturnType<typeof readFilters>) {
+      // Height is the only filter that reasons about a range rather than a
+      // value: the bike must fit the rider, not the other way round.
+      if (f.height && (f.height < num(el, 'hmin') || f.height > num(el, 'hmax'))) return false;
+      if (f.brand && el.dataset.brand !== f.brand) return false;
+      if (f.maxPrice && num(el, 'price') > f.maxPrice) return false;
+      if (f.health && num(el, 'health') < f.health) return false;
+      if (f.grade === 'A' && el.dataset.grade !== 'A') return false;
+      if (f.grade === 'AB' && !['A', 'B'].includes(el.dataset.grade ?? '')) return false;
+      if (f.sizes.length && !f.sizes.includes(el.dataset.size ?? '')) return false;
+      if (f.categories.length && !f.categories.includes(el.dataset.category ?? '')) return false;
+      return true;
+    }
+
+    function activeCount(f: ReturnType<typeof readFilters>) {
+      return (
+        (f.height ? 1 : 0) +
+        (f.brand ? 1 : 0) +
+        (f.maxPrice ? 1 : 0) +
+        (f.health ? 1 : 0) +
+        (f.grade ? 1 : 0) +
+        f.sizes.length +
+        f.categories.length
+      );
+    }
+
+    function sortItems(visible: HTMLElement[], key: SortKey) {
+      const compare: Record<SortKey, (a: HTMLElement, b: HTMLElement) => number> = {
+        newest: (a, b) => (b.dataset.listed ?? '').localeCompare(a.dataset.listed ?? ''),
+        'price-asc': (a, b) => num(a, 'price') - num(b, 'price'),
+        'price-desc': (a, b) => num(b, 'price') - num(a, 'price'),
+        'battery-desc': (a, b) => num(b, 'health') - num(a, 'health'),
+        'mileage-asc': (a, b) => num(a, 'mileage') - num(b, 'mileage'),
+        'year-desc': (a, b) => num(b, 'year') - num(a, 'year'),
+      };
+      // CSS order rather than moving DOM nodes. No reflow of the whole grid and
+      // no risk of losing focus on an element that gets re-appended.
+      [...visible].sort(compare[key]).forEach((el, i) => (el.style.order = String(i)));
+    }
+
+    function syncUrl(f: ReturnType<typeof readFilters>) {
+      const params = new URLSearchParams();
+      if (f.height) params.set('height', String(f.height));
+      if (f.brand) params.set('brand', f.brand);
+      if (f.maxPrice) params.set('maxPrice', String(f.maxPrice));
+      if (f.health) params.set('health', String(f.health));
+      if (f.grade) params.set('grade', f.grade);
+      f.sizes.forEach((s) => params.append('size', s));
+      f.categories.forEach((c) => params.append('category', c));
+      if (f.sort !== 'newest') params.set('sort', f.sort);
+      const qs = params.toString();
+      history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+    }
+
+    function apply() {
+      const f = readFilters();
+      const visible: HTMLElement[] = [];
+
+      for (const el of items) {
+        const ok = matches(el, f);
+        el.hidden = !ok;
+        if (ok) visible.push(el);
+      }
+
+      sortItems(visible, f.sort);
+
+      const n = visible.length;
+      if (countEl) countEl.textContent = String(n);
+      if (applyCountEl) applyCountEl.textContent = String(n);
+      if (emptyState) emptyState.hidden = n > 0;
+
+      const active = activeCount(f);
+      if (badge) {
+        badge.hidden = active === 0;
+        badge.textContent = String(active);
+      }
+      clearButtons.forEach((b) => {
+        if (b && b.id === 'filter-clear') b.classList.toggle('hidden', active === 0);
+      });
+
+      syncUrl(f);
+    }
+
+    function restoreFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const set = (name: string, value: string) => {
+        const field = form!.elements.namedItem(name);
+        if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
+          field.value = value;
+        }
+      };
+      ['height', 'brand', 'maxPrice', 'health', 'grade', 'sort'].forEach((k) => {
+        const v = params.get(k);
+        if (v) set(k, v);
+      });
+      ['size', 'category'].forEach((k) => {
+        const values = params.getAll(k);
+        form!
+          .querySelectorAll<HTMLInputElement>(`input[name="${k}"]`)
+          .forEach((input) => (input.checked = values.includes(input.value)));
+      });
+    }
+
+    function openPanel() {
+      panel?.setAttribute('data-open', 'true');
+      document.body.style.overflow = 'hidden';
+    }
+    function closePanel() {
+      panel?.setAttribute('data-open', 'false');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('filter-open')?.addEventListener('click', openPanel);
+    document.getElementById('filter-close')?.addEventListener('click', closePanel);
+    document.getElementById('filter-apply')?.addEventListener('click', closePanel);
+
+    clearButtons.forEach((btn) =>
+      btn?.addEventListener('click', () => {
+        form.reset();
+        apply();
+      }),
+    );
+
+    form.addEventListener('input', apply);
+    form.addEventListener('change', apply);
+    // The form has no server to post to. Enter should just close the sheet.
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      closePanel();
+    });
+
+    restoreFromUrl();
+    apply();
+  }
+
+  document.addEventListener('astro:page-load', initInventory);
+</script>
