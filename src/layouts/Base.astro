@@ -10,9 +10,12 @@ interface Props {
   description?: string;
   image?: string;
   noindex?: boolean;
+  /* Off for the admin prototype. It is a tool, not a shop window, and the
+     motion bundle is never fetched on a page that opts out. */
+  motion?: boolean;
 }
 
-const { title, description, image, noindex } = Astro.props;
+const { title, description, image, noindex, motion = true } = Astro.props;
 ---
 
 <!doctype html>
@@ -20,6 +23,25 @@ const { title, description, image, noindex } = Astro.props;
   <head>
     <Seo title={title} description={description} image={image} noindex={noindex} />
     <ClientRouter />
+
+    {
+      /*
+      Runs before first paint, so anything that scroll-reveals can start hidden
+      without a frame of visible content jumping. The class is the switch for the
+      whole motion layer: no class, no hidden state, no animation. Anyone who has
+      asked their system for reduced motion never gets it, and the timer takes it
+      back off if the motion bundle fails to load, so a blocked script leaves a
+      plain readable page rather than an empty one.
+    */
+    }
+    <script is:inline define:vars={{ motionEnabled: motion }}>
+      if (motionEnabled && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('motion');
+        window.__motionFailsafe = setTimeout(function () {
+          document.documentElement.classList.remove('motion');
+        }, 2500);
+      }
+    </script>
     {
       /* Pages inject page-specific structured data here, such as the Product
         schema on a bike listing. */
@@ -27,7 +49,7 @@ const { title, description, image, noindex } = Astro.props;
     <slot name="head" />
   </head>
 
-  <body class="flex min-h-dvh flex-col">
+  <body class="flex min-h-dvh flex-col" data-motion={motion ? undefined : 'off'}>
     <a
       href="#main"
       class="focus:bg-ink focus:text-paper sr-only rounded-sm focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
@@ -42,5 +64,35 @@ const { title, description, image, noindex } = Astro.props;
     </main>
 
     <Footer />
+
+    <script>
+      /* Dynamic import on purpose. GSAP and Lenis land in their own chunk, which
+         means /admin, the one page that already loads React, never fetches them. */
+      let motion: typeof import('../lib/motion') | null = null;
+
+      async function boot() {
+        if (document.body.dataset.motion === 'off') return;
+        motion ??= await import('../lib/motion');
+        motion.initMotion();
+      }
+
+      /* Scroll triggers hold on to elements the swap is about to discard. */
+      document.addEventListener('astro:before-swap', () => motion?.destroyMotion());
+
+      document.addEventListener('astro:after-swap', () => {
+        /* Astro copies the incoming document's <html> attributes onto the live
+           element, which drops the class the inline script added. Restoring it
+           here, in the same frame as the swap, avoids a flash of content that
+           appears and is then hidden again by the next reveal. */
+        if (
+          document.body.dataset.motion !== 'off' &&
+          !matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+          document.documentElement.classList.add('motion');
+        }
+      });
+
+      document.addEventListener('astro:page-load', boot);
+    </script>
   </body>
 </html>

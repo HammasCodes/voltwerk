@@ -75,17 +75,22 @@ src/
 - **Astro 7** with static output
 - **Tailwind 4** via `@tailwindcss/vite`, with the design tokens in `src/styles/global.css`
 - **React 19** on `/admin` only
+- **GSAP + Lenis** for the motion layer, in a chunk that loads after first paint
 - Self-hosted variable fonts: Bricolage Grotesque, Inter, JetBrains Mono
 
 ### JavaScript budget
 
-| Page                          | JS shipped                            |
-| ----------------------------- | ------------------------------------- |
-| Home, service, about, contact | 13,935 bytes                          |
-| Bikes index                   | ~19KB including the filter script     |
-| Admin                         | 234KB, the only page that loads React |
+| Page            | Before first paint      | Fetched afterwards                 |
+| --------------- | ----------------------- | ---------------------------------- |
+| Marketing pages | 19-23KB raw, 6.8KB gzip | Motion: 134KB raw, 49KB gzip       |
+| Bikes index     | 23KB raw, 6.8KB gzip    | Motion: 134KB raw, 49KB gzip       |
+| Admin prototype | 19KB raw, 6.8KB gzip    | React island: 221KB raw, 67KB gzip |
+
+The eager column is the view transition router, the link prefetcher, and each page's own scripts. Nothing on the page waits for the motion chunk: it is a dynamic import, the admin route never requests it, and anyone who has asked for reduced motion never runs it.
 
 Everything except the admin screen runs on plain TypeScript against the DOM. The filtering, gallery, mobile navigation and forms need no framework.
+
+The motion layer is the single most expensive thing on a marketing page and it buys feel rather than function. Removing it is one script tag in `src/layouts/Base.astro`, one block in `src/styles/global.css`, and the `data-anim` attributes become inert.
 
 ---
 
@@ -95,8 +100,10 @@ Everything except the admin screen runs on plain TypeScript against the DOM. The
 - **Zero WCAG 2.1 AA violations** from axe-core, across all 8 unique templates at 1440px and 390px
 - No horizontal overflow at 390px, 768px or 1440px
 - No console errors or failed requests on any page
+- 21/21 interaction tests pass
+- **89/89 motion checks pass**: every page scrolled top to bottom at both widths with nothing left invisible, the reduced-motion path, a view transition, an anchor jump, and a filter round trip
 
-The scripts used for these checks are in `_chunks/` (`shoot.mjs` for screenshots and overflow, `a11y.mjs` for axe). They are development tools, not part of the site.
+The scripts used for these checks are in `_chunks/` (`shoot.mjs` for screenshots and overflow, `a11y.mjs` for axe, `interact.mjs` for behaviour, `motion.mjs` for the animation layer). They are development tools, not part of the site.
 
 ---
 

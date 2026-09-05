@@ -31,7 +31,7 @@ const principles = [
   title="About"
   description={`${company.name} has been buying, checking and reselling used electric bikes in Amsterdam since ${company.foundedYear}.`}
 >
-  <section class="shell pt-12 pb-14 md:pt-16">
+  <section class="shell pt-12 pb-14 md:pt-16" data-anim="hero">
     <p class="text-label text-ink-faint uppercase">About us</p>
     <h1 class="text-h1 mt-4 max-w-3xl">
       A workshop that happens to sell bikes, rather than a shop that happens to have a workshop.
@@ -46,7 +46,11 @@ const principles = [
   {
     workshop && (
       <div class="shell">
-        <div class="bg-paper-sunk aspect-[16/9] overflow-hidden rounded-lg">
+        <div
+          class="bg-paper-sunk aspect-[16/9] overflow-hidden rounded-lg"
+          data-anim="media"
+          data-parallax="5"
+        >
           <Image
             src={workshop}
             alt="The VOLTWERK workshop with bikes on repair stands"
@@ -62,10 +66,10 @@ const principles = [
 
   <section class="shell py-14 md:py-20">
     <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:gap-16">
-      <div>
+      <div data-anim="reveal">
         <h2 class="text-h2">Why used</h2>
       </div>
-      <div class="text-lead text-ink-muted max-w-2xl space-y-5">
+      <div class="text-lead text-ink-muted max-w-2xl space-y-5" data-anim="stagger">
         <p>
           A three year old e-bike from a good brand is usually a better bike than a new one at the
           same money. The frame, the motor and the brakes on a €3,000 bike do not stop being good
@@ -86,8 +90,8 @@ const principles = [
 
   <section class="border-line bg-paper-sunk border-y py-14 md:py-20">
     <div class="shell">
-      <h2 class="text-h2">How we work</h2>
-      <div class="mt-10 grid gap-8 md:grid-cols-3 md:gap-10">
+      <h2 class="text-h2" data-anim="reveal">How we work</h2>
+      <div class="mt-10 grid gap-8 md:grid-cols-3 md:gap-10" data-anim="stagger">
         {
           principles.map((p) => (
             <div class="border-ink border-t-2 pt-5">
@@ -104,7 +108,11 @@ const principles = [
     <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
       {
         detail && (
-          <div class="bg-paper-sunk aspect-[4/3] overflow-hidden rounded-lg">
+          <div
+            class="bg-paper-sunk aspect-[4/3] overflow-hidden rounded-lg"
+            data-anim="reveal"
+            data-parallax="5"
+          >
             <Image
               src={detail}
               alt="Close detail of bicycle repair work"
@@ -116,7 +124,7 @@ const principles = [
           </div>
         )
       }
-      <div>
+      <div data-anim="reveal">
         <h2 class="text-h2">Selling or trading in?</h2>
         <p class="text-lead text-ink-muted mt-5">
           We buy used electric bikes outright, and we will take yours against anything on the floor.

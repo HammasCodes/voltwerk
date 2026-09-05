@@ -167,6 +167,52 @@
   }
 }
 
+/* ── Motion ───────────────────────────────────────────────────────────── */
+
+/* Lenis owns the scroll position while it is running, so the native smooth
+   behaviour has to step aside or the two ease against each other. Without JS
+   the CSS version above is still what handles anchor links. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+/* Overlays with their own scrollbar, marked data-lenis-prevent, keep native
+   scrolling and stop it chaining to the page underneath. */
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* The starting state for everything that animates in. Scoped to html.motion,
+   which is set by an inline script in the head only when the visitor has not
+   asked for reduced motion, and removed again if the motion bundle never runs.
+   Opacity only. GSAP adds the small upward travel when it runs, so the layout
+   is never offset by an element that is waiting for a trigger, and a page with a
+   stalled bundle has nothing sitting in the wrong place. */
+html.motion [data-anim='hero'] > *,
+html.motion [data-anim='media'],
+html.motion [data-anim='reveal'],
+html.motion [data-anim='stagger'] > *,
+html.motion #bike-grid .bike-item {
+  opacity: 0;
+}
+
+/* Printing an invisible page would be a poor joke. */
+@media print {
+  html.motion [data-anim='hero'] > *,
+  html.motion [data-anim='media'],
+  html.motion [data-anim='reveal'],
+  html.motion [data-anim='stagger'] > *,
+  html.motion #bike-grid .bike-item {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -177,5 +223,12 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  /* Belt and braces. The class should never have been set in the first place. */
+  [data-anim],
+  [data-anim] > *,
+  .bike-item {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

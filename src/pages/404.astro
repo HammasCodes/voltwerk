@@ -6,7 +6,7 @@ import { featuredBikes, listedBikes } from '../data/bikes';
 ---
 
 <Base title="Page not found" noindex>
-  <section class="shell py-20 md:py-28">
+  <section class="shell py-20 md:py-28" data-anim="hero">
     <p class="tabular text-ink-faint font-mono text-sm">404</p>
     <h1 class="text-h1 mt-4 max-w-2xl">This page has gone the way of a sold bike.</h1>
     <p class="text-lead text-ink-muted mt-6 max-w-lg">
@@ -25,8 +25,11 @@ import { featuredBikes, listedBikes } from '../data/bikes';
   }
   <section class="border-line border-t py-14 md:py-20">
     <div class="shell">
-      <h2 class="text-h2">While you are here</h2>
-      <div class="mt-8 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+      <h2 class="text-h2" data-anim="reveal">While you are here</h2>
+      <div
+        class="mt-8 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4"
+        data-anim="stagger"
+      >
         {featuredBikes.map((bike) => <BikeCard bike={bike} />)}
       </div>
     </div>

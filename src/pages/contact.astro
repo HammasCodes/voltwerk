@@ -9,7 +9,7 @@ import { listedBikes } from '../data/bikes';
   title="Contact"
   description={`Visit ${company.name} at ${company.address.street}, ${company.address.city}. Call ${company.phone} or send a message about a bike, a repair or a trade in.`}
 >
-  <section class="shell pt-12 pb-14 md:pt-16">
+  <section class="shell pt-12 pb-14 md:pt-16" data-anim="hero">
     <p class="text-label text-ink-faint uppercase">Contact</p>
     <h1 class="text-h1 mt-4">Come by, call, or send a message.</h1>
     <p class="text-lead text-ink-muted mt-6 max-w-xl">
@@ -21,7 +21,12 @@ import { listedBikes } from '../data/bikes';
   <section class="shell pb-16 md:pb-24">
     <div class="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16">
       <!-- Form -->
-      <form id="contact-form" class="border-line bg-card rounded-lg border p-6 sm:p-8" novalidate>
+      <form
+        id="contact-form"
+        class="border-line bg-card rounded-lg border p-6 sm:p-8"
+        data-anim="reveal"
+        novalidate
+      >
         <h2 class="text-h3">Send a message</h2>
 
         <div class="mt-6 grid gap-5 sm:grid-cols-2">
@@ -145,7 +150,7 @@ import { listedBikes } from '../data/bikes';
       </form>
 
       <!-- Details -->
-      <div class="space-y-8">
+      <div class="space-y-8" data-anim="stagger">
         <div class="border-line rounded-lg border p-6">
           <h2 class="text-label text-ink-faint uppercase">Visit the workshop</h2>
           <address class="mt-4 text-lg leading-relaxed not-italic">

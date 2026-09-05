@@ -17,7 +17,9 @@ const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 const stockCount = listedBikes.length;
 ---
 
-<header class="border-line bg-paper/85 sticky top-0 z-40 border-b backdrop-blur-md">
+<header
+  class="border-line bg-paper/85 sticky top-0 z-40 border-b backdrop-blur-md transition-shadow duration-300 data-[scrolled]:shadow-[0_1px_16px_-8px_rgb(15_15_14/0.35)]"
+>
   <div class="shell flex h-16 items-center justify-between gap-4 md:h-20">
     <a
       href="/"
@@ -54,19 +56,6 @@ const stockCount = listedBikes.length;
 
     <div class="flex items-center gap-2">
       <a
-        href="/bikes"
-        class="border-line-strong text-ink-muted hover:border-ink hover:text-ink hidden items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors sm:inline-flex"
-      >
-        <span class="relative flex h-1.5 w-1.5" aria-hidden="true">
-          <span
-            class="bg-available absolute inline-flex h-full w-full animate-ping rounded-full opacity-60"
-          ></span>
-          <span class="bg-available relative inline-flex h-1.5 w-1.5 rounded-full"></span>
-        </span>
-        <span class="tabular">{stockCount}</span> in stock
-      </a>
-
-      <a
         href={company.phoneHref}
         class="focus-invert bg-ink text-paper hover:bg-ink-muted hidden rounded-sm px-4 py-2 text-sm font-medium transition-colors lg:inline-block"
       >
@@ -84,3 +73,33 @@ const stockCount = listedBikes.length;
     </div>
   </div>
 </header>
+
+<script>
+  /* The header lifts off the page once you leave the top of it. Deliberately not
+     part of the motion bundle: it is a state, not an animation, so it still works
+     on /admin and if that bundle never loads.
+
+     Bound at module scope rather than inside the astro:page-load handler. The
+     listener is on window, which survives a view transition, so re-binding it on
+     every navigation would stack up a fresh listener each time. */
+  function syncHeaderState() {
+    const header = document.querySelector('header');
+    if (!header) return;
+    if (window.scrollY > 4) header.setAttribute('data-scrolled', '');
+    else header.removeAttribute('data-scrolled');
+  }
+
+  let frame = 0;
+  // passive: this never calls preventDefault, and saying so keeps it off the
+  // critical path of the scroll itself.
+  window.addEventListener(
+    'scroll',
+    () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(syncHeaderState);
+    },
+    { passive: true },
+  );
+
+  document.addEventListener('astro:page-load', syncHeaderState);
+</script>

@@ -57,7 +57,7 @@ const isActive = (href: string) => currentPath === href || currentPath.startsWit
     </button>
   </div>
 
-  <nav aria-label="Main" class="flex-1 overflow-y-auto px-5 pt-6">
+  <nav aria-label="Main" class="flex-1 overflow-y-auto px-5 pt-6" data-lenis-prevent>
     <ul class="flex flex-col">
       {
         nav.map((item) => (
@@ -123,6 +123,9 @@ const isActive = (href: string) => currentPath === href || currentPath.startsWit
       openBtn.setAttribute('aria-expanded', 'true');
       previousOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      // The smooth scroller keeps its own scroll position, so hiding overflow is
+      // not enough on its own to hold the page still behind the panel.
+      window.voltwerkLenis?.stop();
       document.addEventListener('keydown', onKeydown);
       panel.focus();
     }
@@ -131,6 +134,7 @@ const isActive = (href: string) => currentPath === href || currentPath.startsWit
       panel.hidden = true;
       openBtn.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = previousOverflow;
+      window.voltwerkLenis?.start();
       document.removeEventListener('keydown', onKeydown);
       openBtn.focus();
     }

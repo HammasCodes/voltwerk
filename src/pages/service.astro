@@ -38,7 +38,7 @@ const faqSchema = {
   <section
     class="shell grid items-center gap-10 pt-12 pb-14 md:pt-16 lg:grid-cols-2 lg:gap-16 lg:pb-20"
   >
-    <div>
+    <div data-anim="hero">
       <p class="text-label text-ink-faint uppercase">The workshop</p>
       <h1 class="text-h1 mt-4">Repairs and servicing for any e-bike.</h1>
       <p class="text-lead text-ink-muted mt-6">
@@ -62,7 +62,11 @@ const faqSchema = {
 
     {
       workshopPhoto && (
-        <div class="bg-paper-sunk aspect-[4/3] overflow-hidden rounded-lg">
+        <div
+          class="bg-paper-sunk aspect-[4/3] overflow-hidden rounded-lg"
+          data-anim="media"
+          data-parallax="4"
+        >
           <Image
             src={workshopPhoto}
             alt="A bicycle on a repair stand in the VOLTWERK workshop"
@@ -78,7 +82,7 @@ const faqSchema = {
 
   <!-- Packages ----------------------------------------------------------- -->
   <section id="packages" class="border-line bg-paper-sunk border-y py-14 md:py-20">
-    <div class="shell">
+    <div class="shell" data-anim="reveal">
       <h2 class="text-h2">Service packages</h2>
       <p class="text-lead text-ink-muted mt-4 max-w-xl">
         Fixed prices, no surprises. If we find something outside the package we call you with a
@@ -90,7 +94,7 @@ const faqSchema = {
           people stall. It is also genuinely the right answer for most used
           bikes, so the nudge is honest. */
       }
-      <div class="mt-10 grid gap-6 lg:grid-cols-3">
+      <div class="mt-10 grid gap-6 lg:grid-cols-3" data-anim="stagger">
         {
           servicePackages.map((pkg) => (
             <div
@@ -155,8 +159,8 @@ const faqSchema = {
 
   <!-- Process ------------------------------------------------------------ -->
   <section class="shell py-14 md:py-20">
-    <h2 class="text-h2">How it works</h2>
-    <ol class="mt-10 grid gap-8 md:grid-cols-3 md:gap-10">
+    <h2 class="text-h2" data-anim="reveal">How it works</h2>
+    <ol class="mt-10 grid gap-8 md:grid-cols-3 md:gap-10" data-anim="stagger">
       {
         serviceSteps.map((step, i) => (
           <li class="border-ink border-t-2 pt-5">
@@ -174,7 +178,7 @@ const faqSchema = {
   <!-- Price list --------------------------------------------------------- -->
   <section id="prices" class="border-line border-t py-14 md:py-20">
     <div class="shell grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
-      <div>
+      <div data-anim="reveal">
         <h2 class="text-h2">Individual jobs</h2>
         <p class="text-ink-muted mt-4">
           Prices marked "from" depend on the parts your bike takes. We confirm the exact figure
@@ -191,7 +195,7 @@ const faqSchema = {
           thing to get wrong, so it should be the first price a worried owner
           sees. */
       }
-      <dl class="border-line border-t">
+      <dl class="border-line border-t" data-anim="stagger">
         {
           serviceItems.map((item) => (
             <div class="border-line flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b py-4">
@@ -218,7 +222,7 @@ const faqSchema = {
   <!-- Booking ------------------------------------------------------------ -->
   <section id="book" class="border-line bg-paper-sunk border-y py-14 md:py-20">
     <div class="shell grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-      <div>
+      <div data-anim="reveal">
         <h2 class="text-h2">Book a repair</h2>
         <p class="text-lead text-ink-muted mt-4">
           Tell us roughly what the bike is doing. We will come back with a time slot and, where we
@@ -233,7 +237,12 @@ const faqSchema = {
         </div>
       </div>
 
-      <form id="booking-form" class="border-line bg-card rounded-lg border p-6 sm:p-8" novalidate>
+      <form
+        id="booking-form"
+        class="border-line bg-card rounded-lg border p-6 sm:p-8"
+        data-anim="reveal"
+        novalidate
+      >
         <div class="grid gap-5 sm:grid-cols-2">
           <div class="sm:col-span-2">
             <label for="b-name" class="text-label text-ink-faint block uppercase">Your name</label>
@@ -349,13 +358,13 @@ const faqSchema = {
 
   <!-- FAQ ---------------------------------------------------------------- -->
   <section class="shell py-14 md:py-20">
-    <h2 class="text-h2">Common questions</h2>
+    <h2 class="text-h2" data-anim="reveal">Common questions</h2>
     {
       /* Native details and summary. An accordion is one of the few widgets the
         platform already ships correctly, including keyboard and screen reader
         behaviour, so writing one in JavaScript would be a downgrade. */
     }
-    <div class="border-line mt-8 max-w-3xl border-t">
+    <div class="border-line mt-8 max-w-3xl border-t" data-anim="stagger">
       {
         serviceFaqs.map((faq) => (
           <details class="faq group border-line border-b">
@@ -383,6 +392,7 @@ const faqSchema = {
   <section class="border-line bg-ink text-paper border-t py-14 md:py-20">
     <div
       class="shell flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between"
+      data-anim="stagger"
     >
       <div>
         <h2 class="text-h2">Looking for a bike, not a repair?</h2>

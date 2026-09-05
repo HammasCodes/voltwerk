@@ -110,14 +110,35 @@ const whatsappText = encodeURIComponent(
     </a>
   </div>
 
-  <div class="shell grid gap-10 pb-16 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-12">
-    <div>
+  {
+    /*
+    One grid carries the gallery, the condition report and the full
+    specification down the left column, with the buy panel spanning all three
+    of those rows in the right column. That shared containing block is what
+    lets the panel actually stay pinned while the page below it scrolls: a
+    sticky element can only travel as far as its own grid row allows, and a
+    row sized to the gallery alone left it nowhere to go. Explicit placement
+    only at lg, so under that breakpoint every piece just falls back to plain
+    DOM order (gallery, buy panel, condition, specification), which is the
+    same order the page has always used on mobile.
+
+    The trade-off is that the condition report and specification give up the
+    full-width banded backgrounds they used to have, since they now share the
+    narrower left column with the gallery. A border and more top padding read
+    as the same kind of break at this width.
+  */
+  }
+  <div class="shell grid gap-x-12 pb-16 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+    <div class="lg:col-start-1 lg:row-start-1" data-anim="reveal">
       <Gallery photos={bike.photos} brand={bike.brand} model={bike.model} slug={bike.slug} />
     </div>
 
     <!-- Buy panel. Sticky on desktop so price and the call to action stay in
-         view while the specification below is being read. -->
-    <div class="lg:sticky lg:top-24 lg:self-start">
+         view while the condition report and specification are being read. -->
+    <div
+      class="mt-10 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:mt-0 lg:self-start"
+      data-anim="hero"
+    >
       <div class="flex items-center gap-3">
         <p class="text-label text-ink-faint uppercase">{bike.brand}</p>
         <Badge availability={bike.availability} />
@@ -184,12 +205,10 @@ const whatsappText = encodeURIComponent(
         opening hours, no appointment needed.
       </p>
     </div>
-  </div>
 
-  <!-- Condition report -------------------------------------------------- -->
-  <section class="border-line bg-paper-sunk border-t">
-    <div class="shell grid gap-10 py-14 md:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
-      <div>
+    <!-- Condition report -------------------------------------------------- -->
+    <div class="border-line mt-14 border-t pt-14 md:mt-20 md:pt-20 lg:col-start-1 lg:row-start-2">
+      <div data-anim="reveal">
         <h2 class="text-h2">Condition report</h2>
         <div class="mt-5">
           <ConditionBadge grade={bike.condition.grade} withMeaning />
@@ -202,7 +221,7 @@ const whatsappText = encodeURIComponent(
           faults in a structured list is making a stronger trust claim than one
           that writes a paragraph of reassurance. */
       }
-      <ul class="divide-line border-line divide-y border-y">
+      <ul class="divide-line border-line mt-8 divide-y border-y" data-anim="stagger">
         {
           bike.condition.notes.map((note) => (
             <li class="flex gap-4 py-4">
@@ -224,12 +243,10 @@ const whatsappText = encodeURIComponent(
         }
       </ul>
     </div>
-  </section>
 
-  <!-- Specification ----------------------------------------------------- -->
-  <section class="shell py-14 md:py-20">
-    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
-      <div>
+    <!-- Specification ------------------------------------------------------ -->
+    <div class="border-line mt-14 border-t pt-14 md:mt-20 md:pt-20 lg:col-start-1 lg:row-start-3">
+      <div data-anim="reveal">
         <h2 class="text-h2">Full specification</h2>
         <p class="text-ink-muted mt-4 max-w-sm">
           Everything we measured or read off the bike during intake. Ask us if something you need is
@@ -237,7 +254,7 @@ const whatsappText = encodeURIComponent(
         </p>
       </div>
 
-      <dl class="grid grid-cols-2 gap-x-8 gap-y-0 sm:grid-cols-2">
+      <dl class="mt-8 grid grid-cols-2 gap-x-8 gap-y-0" data-anim="stagger">
         {
           specs.map((spec) => (
             <div class="border-line flex justify-between gap-4 border-b py-3.5">
@@ -249,57 +266,69 @@ const whatsappText = encodeURIComponent(
           ))
         }
       </dl>
+
+      {
+        /* Two columns rather than the three this used to be. The specification
+          block now shares a column with the buy panel instead of the full
+          shell width, and three columns of "Warranty" and "Work we have done"
+          in that space was cramped. Work we have done spans both, since a list
+          of dated entries reads better full width than squeezed into a third. */
+      }
+      <div class="border-line mt-14 grid gap-10 border-t pt-14 sm:grid-cols-2" data-anim="stagger">
+        <div>
+          <h3 class="text-label text-ink-faint uppercase">Included in the price</h3>
+          <ul class="mt-4 space-y-2">
+            {
+              bike.included.map((item) => (
+                <li class="flex gap-2.5 text-sm">
+                  <span class="bg-ink mt-2 h-1 w-1 shrink-0 rounded-full" aria-hidden="true" />
+                  {item}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-label text-ink-faint uppercase">Warranty</h3>
+          <p class="tabular mt-4 font-mono text-2xl font-semibold">{bike.warrantyMonths} months</p>
+          <p class="text-ink-muted mt-2 text-sm">
+            Covers the motor, battery and electronics. Wear parts such as tyres, pads and the chain
+            are excluded.
+          </p>
+        </div>
+
+        <div class="sm:col-span-2">
+          <h3 class="text-label text-ink-faint uppercase">Work we have done</h3>
+          <ul class="mt-4 space-y-3">
+            {
+              bike.serviceHistory.map((entry) => (
+                <li class="text-sm">
+                  <span class="tabular text-ink-faint block font-mono text-xs">
+                    {formatDate(entry.date)}
+                  </span>
+                  <span class="mt-0.5 block">{entry.work}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
     </div>
-
-    <div class="border-line mt-14 grid gap-10 border-t pt-14 sm:grid-cols-2 lg:grid-cols-3">
-      <div>
-        <h3 class="text-label text-ink-faint uppercase">Included in the price</h3>
-        <ul class="mt-4 space-y-2">
-          {
-            bike.included.map((item) => (
-              <li class="flex gap-2.5 text-sm">
-                <span class="bg-ink mt-2 h-1 w-1 shrink-0 rounded-full" aria-hidden="true" />
-                {item}
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="text-label text-ink-faint uppercase">Warranty</h3>
-        <p class="tabular mt-4 font-mono text-2xl font-semibold">{bike.warrantyMonths} months</p>
-        <p class="text-ink-muted mt-2 text-sm">
-          Covers the motor, battery and electronics. Wear parts such as tyres, pads and the chain
-          are excluded.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-label text-ink-faint uppercase">Work we have done</h3>
-        <ul class="mt-4 space-y-3">
-          {
-            bike.serviceHistory.map((entry) => (
-              <li class="text-sm">
-                <span class="tabular text-ink-faint block font-mono text-xs">
-                  {formatDate(entry.date)}
-                </span>
-                <span class="mt-0.5 block">{entry.work}</span>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-    </div>
-  </section>
+  </div>
 
   <!-- Similar ------------------------------------------------------------ -->
   {
     similar.length > 0 && (
       <section class="border-line border-t py-14 md:py-20">
         <div class="shell">
-          <h2 class="text-h2">Also worth a look</h2>
-          <div class="mt-8 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          <h2 class="text-h2" data-anim="reveal">
+            Also worth a look
+          </h2>
+          <div
+            class="mt-8 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
+            data-anim="stagger"
+          >
             {similar.map((b) => (
               <BikeCard bike={b} />
             ))}

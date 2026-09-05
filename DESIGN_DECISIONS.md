@@ -111,21 +111,43 @@ One colour rule is enforced in the token file: **the lime accent is a fill, neve
 
 ---
 
-## 8. Technical choices, and what they cost
+## 8. Motion
+
+The site scrolls on Lenis and animates with GSAP. Both were added after the layout was finished, which is the order that matters: the page had to work as a static document first, and motion is a layer over the top of it rather than something the design leans on.
+
+**One rule decides everything here. Motion never carries information.** Someone comparing four battery percentages needs the numbers to hold still. So every reveal fades in over roughly 0.65 seconds, travels 18px, and plays once. Nothing loops, nothing pulses, nothing has to finish before the content underneath becomes readable.
+
+**Four names, applied in the markup.** `hero` staggers a heading block in on load, `media` settles a framed photo out of a slight scale, `reveal` brings one block up as it enters view, `stagger` does the same to a list in sequence. A page author chooses what moves, the module decides how, and the vocabulary stays small enough that the whole site moves the same way.
+
+**Reveals are opacity in CSS and travel in JavaScript.** The resting state is set by a class on `<html>` that an inline script adds before first paint, so nothing flashes into view and then hides. That class is also the off switch: it is never added for a visitor who has asked for reduced motion, and a 2.5 second failsafe strips it if the motion bundle never arrives. With JavaScript off, or blocked, or slow, the page is complete and static rather than blank.
+
+**The inventory grid is the awkward case.** Cards get hidden and reordered by the filter, so a single timeline across the grid would animate whichever set happened to be visible when it fired. Each card gets its own trigger instead, and the filter tells the motion layer when it has changed the page height.
+
+**Parallax moves the crop, not the layout.** The image inside a frame is oversized by a few percent and drifts against it, between 4% and 6%. It is deliberately close to the threshold of noticing. Anything larger on a page selling used goods reads as a showroom trick.
+
+**Touch is left alone.** Phone browsers already have momentum scrolling that is better tuned than anything shipped in a bundle, and taking it over breaks pull to refresh and the address bar collapse. Lenis smooths the wheel and the trackpad only.
+
+**What it costs, stated plainly.** GSAP, ScrollTrigger and Lenis are 134KB raw, 49KB gzipped. That is a large number next to the 6.8KB gzipped that the marketing pages load before first paint, and it is the most expensive decision on the site. Three things keep it honest: it is a dynamic import, so nothing on the page waits for it; `/admin` never requests it, because a stock management tool should not glide; and it buys feel rather than function, so if the client would rather have the bytes back it comes out in two edits without touching a single page.
+
+---
+
+## 9. Technical choices, and what they cost
 
 Astro 7 with Tailwind 4, static output, React only where it earns its place.
 
-The marketing pages ship **13,935 bytes of JavaScript**, which is the view transition router and nothing else. The inventory filtering, the photo gallery, the mobile navigation and the contact forms are all plain TypeScript against the DOM. React loads on exactly one route, `/admin`, because that is the only screen with state complicated enough to justify 184KB.
+The marketing pages ship **6.8KB of gzipped JavaScript before first paint**: the view transition router, the link prefetcher, and the page's own scripts. The inventory filtering, the photo gallery, the mobile navigation and the contact forms are all plain TypeScript against the DOM. React loads on exactly one route, `/admin`, because that is the only screen with state complicated enough to justify 184KB. The motion layer described in section 8 loads after paint and is the one large payload on a public page.
 
 That was a correction made mid build. The mobile menu was originally a React island, which pulled the entire React runtime onto the home page: 201KB of JavaScript to operate a hamburger. Rewriting it as 40 lines of vanilla script cut the home page payload by 93%.
 
 The inventory filter works on data attributes written into the HTML rather than a serialised copy of the bike data, so the page ships one copy of the inventory instead of two.
 
-**Measured results:** 21 pages build clean, zero WCAG 2.1 AA violations from axe-core across all 8 unique templates at both desktop and mobile widths, and no horizontal overflow at 390px, 768px or 1440px.
+A second correction, found while adding the motion layer above: the buy panel on the bike detail page was marked `position: sticky` but never actually stuck. A sticky element can only travel as far as its own containing block, and the panel's block was just the row it shared with the gallery, a few hundred pixels tall, gone before the condition report even started. The comment beside it had promised something the markup could not deliver. The fix was structural, not cosmetic: the gallery, condition report and specification now share one grid column, with the panel spanning all three rows opposite it, so its containing block is the full length of the content it is meant to accompany.
+
+**Measured results:** 21 pages build clean, zero WCAG 2.1 AA violations from axe-core across all 8 unique templates at both desktop and mobile widths, no horizontal overflow at 390px, 768px or 1440px, 21 of 21 interaction tests passing, and 89 of 89 motion checks passing, which include scrolling every page to the bottom at both widths to prove nothing is ever left invisible.
 
 ---
 
-## 9. Trade-offs I made, stated plainly
+## 10. Trade-offs I made, stated plainly
 
 **No real backend.** The brief allows mock data. `localStorage` means admin edits live in one browser and never reach the public pages, which are generated at build time. A real build would replace the four functions in `bikeStore.ts` and add a rebuild hook.
 
@@ -139,7 +161,7 @@ The inventory filter works on data attributes written into the HTML rather than 
 
 ---
 
-## 10. What I would build next
+## 11. What I would build next
 
 1. Replace the photography, then tighten the card crops.
 2. Dutch and English, with the language in the URL.

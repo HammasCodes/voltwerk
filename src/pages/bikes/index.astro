@@ -24,7 +24,7 @@ const bikes = [...listedBikes].sort(
   title="Bikes for sale"
   description={`${bikes.length} used electric bikes in stock in Amsterdam. Every one battery tested, inspected over 21 points and sold with a written condition report.`}
 >
-  <div class="shell pt-10 pb-8 md:pt-14">
+  <div class="shell pt-10 pb-8 md:pt-14" data-anim="hero">
     <h1 class="text-h1">Bikes for sale</h1>
     <p class="text-lead text-ink-muted mt-4 max-w-xl">
       Every bike is battery tested and inspected before it goes on the floor. Health, mileage and
@@ -57,8 +57,14 @@ const bikes = [...listedBikes].sort(
           </button>
         </div>
 
+        {
+          /* data-lenis-prevent: this is the one scrollable region on the site that
+            is not the page itself. Without it the smooth scroller swallows the
+            wheel and the filter sheet cannot be scrolled to its footer. */
+        }
         <div
           class="flex-1 space-y-7 overflow-y-auto px-5 py-6 lg:flex lg:flex-wrap lg:items-end lg:space-y-0 lg:gap-x-5 lg:gap-y-4 lg:overflow-visible lg:px-0 lg:py-0"
+          data-lenis-prevent
         >
           <!-- Fit helper. Deliberately first, because a bike that does not fit
                is disqualified no matter how good the price is. -->
@@ -424,6 +430,10 @@ const bikes = [...listedBikes].sort(
       });
 
       syncUrl(f);
+
+      /* Hiding and reordering cards changes the height of everything below the
+         grid, which invalidates every scroll trigger measured against it. */
+      document.dispatchEvent(new CustomEvent('voltwerk:layout'));
     }
 
     function restoreFromUrl() {
@@ -449,10 +459,14 @@ const bikes = [...listedBikes].sort(
     function openPanel() {
       panel?.setAttribute('data-open', 'true');
       document.body.style.overflow = 'hidden';
+      // Overflow hidden alone does not stop the smooth scroller, which keeps its
+      // own scroll position and would move the page behind the sheet.
+      window.voltwerkLenis?.stop();
     }
     function closePanel() {
       panel?.setAttribute('data-open', 'false');
       document.body.style.overflow = '';
+      window.voltwerkLenis?.start();
     }
 
     document.getElementById('filter-open')?.addEventListener('click', openPanel);

@@ -177,5 +177,5 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked/flagged
 
 - `@bong/claude-frontend-skills` not on npm: non-blocking
 - Skills/MCP may need a session restart before they load
-- Photos are Wikimedia Commons (CC licensed), credited in `src/data/photo-credits.json`. Weakest part of the build, see DESIGN_DECISIONS section 9
+- Photos are Wikimedia Commons (CC licensed), credited in `src/data/photo-credits.json`. Weakest part of the build, see DESIGN_DECISIONS section 10
 - JS budget: React loads on `/admin` only. Inventory filtering is vanilla TS
